@@ -27,7 +27,7 @@ class LoginPage {
         await this.page.locator(this.tZ).fill("322638727");
         await this.page.locator(this.sL).fill("2000");
         await this.page.locator(this.bb).click();
-        if(!await this.card.isVisible()){
+        if (!await this.card.isVisible()) {
             await this.page.pause(5000);
         }
         await this.card.waitFor({ state: 'visible' });

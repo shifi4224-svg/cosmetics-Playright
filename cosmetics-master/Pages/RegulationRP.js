@@ -117,7 +117,7 @@ class RegulationRPPage {
         this.log.info("רישום נציג אחראי בודד");
         const oldfilepath = this.po.dataFolder + '\\linked.txt';
         const t = await this.sharedUtils.ReadFileUpdate(oldfilepath);
-        let businessName = t[1] + t[2]+name;
+        let businessName = t[1] + t[2] + name;
         await this.orderButton.click();
         await this.rpIshKesher3.click();
         await this.noBusiness.click();
@@ -127,31 +127,10 @@ class RegulationRPPage {
         await this.sharedUtils.CheckCharacters(this.businessId, "מספר מזהה", this.env.charBusinessId);
         await this.sharedUtils.CheckMaxLength(this.businessId, 9, "מספר מזהה");
         await this.businessId.fill(t[0]);
-        
+
         await this.address.RPaddress();
         await this.files.TestFileTypeValidation();
         const f = await this.files.AtachFile();
-        await this.Save(f);
-    }
-
-    async RegulationFast(nameFile = "Doc1.pdf") {
-        this.log.info("רישום נציג אחראי מקושר ליצרן או יבואן");
-        const oldfilepath = this.po.dataFolder + '\\RP.txt';
-        const businessName = await this.sharedUtils.ReadFile(oldfilepath);
-        await this.orderButton.click();
-        if (await this.isVisibleSafe(this.dialog, 2000)) {
-            await this.okEnd.click();
-            await this.orderButton.click();
-        }
-        await this.rpIshKesher3.click();
-        await this.yesBusiness.click();
-        await this.page.waitForTimeout(3000);
-        await this.business.click();
-        await this.business.fill(businessName);
-        await this.option.click();
-        await this.page.waitForTimeout(3000);
-        await this.address.RPaddressFast();
-        const f = await this.files.AtachFile(nameFile, this.tazhir);
         await this.Save(f);
     }
 
@@ -170,5 +149,28 @@ class RegulationRPPage {
             this.log.info("עבר בהצלחה רישום מנכל ונציג אחראי");
         }
     }
+
+    async PublicCheck(locator=this.yesCorporation, name = "") {
+        this.log.info("בדיקת מקטע פרטי התקשרות");
+        let corpurationName = name;
+        if (name === "") {
+            const oldfilepath = this.po.dataFolder + '\\RP2.txt';
+            const result = await this.sharedUtils.ReadFile(oldfilepath);
+            corpurationName = result[0].trim(); // ← שורה ראשונה בלי רווחים
+        }
+        await this.orderButton.click();
+        await this.rpIshKesher3.click();
+        await locator.click();
+        await this.corpuration.click();
+        await this.corpuration.fill(corpurationName);
+        await this.option.click();
+        await this.address.telefon.first().fill(this.env.telefon);
+        await this.address.email.first().fill(this.env.email);
+        const f = await this.files.AtachFile("", "Doc1.pdf");
+        console.log(1)
+        await this.Save(f);
+    }
+
+
 }
 module.exports = RegulationRPPage;

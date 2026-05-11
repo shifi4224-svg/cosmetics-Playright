@@ -54,6 +54,7 @@ class DealerPage {
         this.errorInvalidCharacter = this.page.locator('//*[contains(text(), "תו לא חוקי")]');
         this.errorIncompatiblePrefix = this.page.locator('//*[contains(text(), "התחילית לא תואמת לישות המשפטית")]');
         this.errorIncompatibleId = this.page.locator('//*[contains(text(), "מספר זהות לא תקין")]');
+        this.errorAlreadyRegistered = this.page.locator('//*[contains(text(), "העסק כבר קיים במערכת")]');
         this.errorNoMancal = this.page.locator('//*[contains(text(), "אינך מורשה להמשיך בתהליך")]');
         this.errorManu1 = this.page.locator('//*[contains(text(), "עבור ייצור תמרוקים נדרש רישיון עסק לעוסק")]');
         this.errorManu2 = this.page.locator('//*[contains(text(), "עליך לעדכן כתובת מסוג אתר יצור")]');
@@ -63,8 +64,8 @@ class DealerPage {
         this.noCorpuration = this.page.locator('//*[text() = "לא תאגיד"]');
         this.yesMancal = this.page.locator('//*[contains(text(), "האם אתה המנכ")]//..//..//..//*[@class="mdc-switch mdc-switch--selected mdc-switch--checked"]');
         this.noMancal = this.page.locator('//*[contains(text(), "האם אתה המנכ")]//..//..//..//*[contains(text(), "לא")]');
-        this.yesMancalIsrael = this.page.locator('//*[contains(text(), "תושב ישראל")]//..//..//..//*[@class="mdc-switch mdc-switch--selected mdc-switch--checked"]');
         this.noMancalIsrael = this.page.locator('//*[contains(text(), "תושב ישראל")]//..//..//..//*[contains(text(), "לא")]');
+        this.yesMancalIsrael = this.page.locator('//*[contains(text(), "תושב ישראל")]//..//..//..//*[contains(text(), "כן")]');
         this.yesCorporateOfficer = this.page.locator('//*[contains(text(), "האם אתה נושא משרה")]//..//..//..//*[contains(text(), "כן")]');
         this.noCorporateOfficer = this.page.locator('//*[contains(text(), "האם אתה נושא משרה")]//..//..//..//*[contains(text(), "לא")]');
         this.code = this.page.locator('//span[text() ="עסק עסק"]//..//..//i[@class="expand-icon moh-icon grid_ar_dropdown ng-star-inserted"]');
@@ -269,8 +270,53 @@ class DealerPage {
         await this.page.waitForTimeout(5000);
     }
 
+    async DealerAlreadyRegistered(name = "תאגיד קיים", idd = "518776767") {
+        console.log("רישום עוסק בתמרוק תאגיד - בדיקת מספר זיהוי שכבר קיים במאגר");
+        try {
+            await this.orderButton.waitFor({ state: 'visible' });
+            await this.orderButton.click();
+
+            if (await this.isVisibleSafe(this.dialog, 3000)) {
+                await this.okEnd.click();
+            }
+
+            await this.tamrukimButton1.click();
+            await this.yesCorporation.click();
+            await this.businessName.fill(name);
+            await this.legalEntity.click();
+            await this.authorized.click();
+            await this.businessId.fill(idd);
+            await this.nextStep.click();
+
+            // דילוג על המסך של פרטי תאגיד נוספים
+            await this.nextStep.click();
+
+            // מילוי שלב 2 - בעלי תפקידים, כתובות והצהרות
+            await this.supplierCheckbox.click();
+            await this.rPCheckbox.click();
+            await this.address.AddAddress(false);
+            await this.oK1.click();
+            await this.oK2.click();
+            await this.nextStep.click();
+            
+            // מילוי שלב 3 - רישיון עסק, תנאי ייצור ושליחה
+            await this.businessLicenseRequired.click();
+            if (!(await this.isVisibleSafe(this.mySelfDeclaration, 1000))) {
+                await this.page.locator('//*[@aria-label="הוספת כתובת"]').click();
+            }
+            await this.mySelfDeclaration.click();
+            await this.accuracyOfData1.click();
+            await this.accuracyOfData2.click();
+            await this.saveSubmit.click();
+            
+        } catch (err) {
+            console.error('DealerAlreadyRegistered error:', err);
+            throw err;
+        }
+    }
+
     async NoMancal(name = "", idd = "") {
-        console.log("רישום עוסק בתמרוק על ידי לא מנכל");
+        console.log('רישום עוסק בתמרוק תאגיד ע"י לא מנכל, המנכל לא תושב ישראל ולא נושא משרה');
         const t = await this.ReadIdName(idd, name);
         let i = 0;
         console.log("מספר מזהה עסק: " + t[0] + " שם העסק: " + t[1]);
@@ -291,13 +337,45 @@ class DealerPage {
             await this.noCorporateOfficer.click();
             await this.nextStep.click();
             if (await this.CheckError() === true) {
-                console.log("לא ניתן להתקדם למי שאינו מנכל");
+                console.log("לא ניתן להתקדם למי שאינו מנכל, המנכל לא תושב ישראל ואינו נושא משרה");
                 return;
             }
             console.error("ניתן לעבור לשלב הבא - תקלה");
 
         } catch (err) {
             console.error('NoMancal error:', err);
+            throw err;
+        }
+    }
+
+    async NoMancalIsraeliResident(name = "", idd = "") {
+        console.log('רישום עוסק בתמרוק תאגיד ע"י לא מנכל והמנכל תושב ישראל');
+        const t = await this.ReadIdName(idd, name);
+        let i = 0;
+        console.log("מספר מזהה עסק: " + t[0] + " שם העסק: " + t[1]);
+        try {
+            await this.orderButton.click();
+
+            if (await this.isVisibleSafe(this.dialog, 3000)) {
+                await this.okEnd.click();
+            }
+            await this.tamrukimButton1.click();
+            await this.yesCorporation.click();
+            await this.businessName.fill(t[1]);
+            await this.legalEntity.click();
+            await this.authorized.click();
+            await this.businessId.fill(t[0]);
+            await this.noMancal.click();
+            //await this.yesMancalIsrael.click();
+            await this.nextStep.click();
+            if (await this.CheckError() === true) {
+                console.log("לא ניתן להתקדם למי שאינו מנכל והמנכל תושב ישראל");
+                return;
+            }
+            console.error("ניתן לעבור לשלב הבא - תקלה");
+
+        } catch (err) {
+            console.error('NoMancalIsraeliResident error:', err);
             throw err;
         }
     }

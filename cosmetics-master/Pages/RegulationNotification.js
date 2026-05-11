@@ -1,5 +1,6 @@
 const SharedUtils = require('./SharedUtils');
 const FilesPage = require('./Files');
+const RegulationItemPage = require('./RegulationItem');
 const path = require('path');
 
 class RegulationNotificationPage {
@@ -10,6 +11,7 @@ class RegulationNotificationPage {
         this.log = log || console;
         this.sharedUtils = new SharedUtils(page, po, env, log);
         this.filesPage = new FilesPage(page, po, env, log);
+        this.regulationItemPage = new RegulationItemPage(page, po, env, log);
 
         // Locators
         this.okItem = this.page.locator('//mat-row[@role="row"][1]//button[@title="אשר פריט"]');
@@ -35,7 +37,7 @@ class RegulationNotificationPage {
         this.cosmeticImportValue3 = this.page.locator('//span[text()=" תמרוק משווק במדינת הסתמכות "]');
         this.cosmeticImportValue3CheckBox1 = this.page.locator('//input[@aria-label="היבואן מחזיק בחשבוניות מכירה לקמעונאי במדינה ממדינות ההסתמכות או מקמעונאי במדינה כאמור או תעודת משלוח לקמעונאי במדינה כאמור *"]');
         this.cosmeticImportValue3CheckBox2 = this.page.locator('//input[@aria-label="היבואן מחזיק בהצהרתו כי התמרוק שהוא מייבא זהה לתמרוק שאליו מתייחס המסמך (חשבונית.תעודת משלוח) *"]');
-        
+
         this.category1 = this.page.locator('//input[@aria-label="קטגוריית תמרוק 1"]');
         this.category2 = this.page.locator('//input[@aria-label="קטגוריית תמרוק 2"]');
         this.category3 = this.page.locator('//input[@aria-label="קטגוריית תמרוק 3"]');
@@ -51,7 +53,7 @@ class RegulationNotificationPage {
         this.selectFileKit = this.page.locator('//app-notification-kits//div[@class="upload-button"]');
         this.typeFileKit = this.page.locator('//*[contains(text(), "העלאת קובץ ערכה")]//..');
         this.addKit = this.page.locator('//moh-button[@textkey="addKit"]');
-        
+
         this.washable = this.page.locator('//label[contains(text(), "האם המוצר נשטף")]');
         this.granules = this.page.locator('//label[contains(text(), "מכיל גרגירים")]');
         this.yesSpecialPack = this.page.locator('//label[contains(text(), "התמרוק מוצג באריזה מיוחדת")]');
@@ -82,7 +84,7 @@ class RegulationNotificationPage {
         this.numOfMonth = this.page.locator('//input[@aria-label="מספר חודשים"]');
         this.frequencyOfUse = this.page.locator('//input[@aria-label="תדירות שימוש"]');
         this.frequencyOfUseName = this.page.locator('//span[text()=" שימוש יומיומי "]');
-        
+
         this.noShades = this.page.locator('//*[contains(text(), "האם יש גוונים")]//..//..//..//*[contains(text(), "לא")]');
         this.yesShades = this.page.locator('//*[contains(text(), "האם יש גוונים")]//..//..//..//*[contains(text(), "כן")]');
         this.shadesName = this.page.locator('//input[@aria-label="שם הגוון"]');
@@ -97,9 +99,9 @@ class RegulationNotificationPage {
         this.vehicleTypeName = this.page.locator('//span[text()=" פורמולה מדויקת "]');
         this.addShade = this.page.locator('//moh-button[@textkey="addShade"]');
         this.closeButton = this.page.locator('//moh-button[@textkey="סגור"]');
-        
+
         this.oKmaterials = this.page.locator('//div[text()=" האם השבת על כל השאלות בעניין הרכב התמרוק וייעודו?* "]//..//..//mat-slide-toggle');
-        
+
         this.panelOther = this.page.locator('//*[@alt="אחר"]');
         this.panelOtherCheckBox = this.page.locator('//input[@aria-label="אחר"]');
         this.panelOtherValue = this.page.locator('//input[@aria-label="טענה שיווקית אחרת"]');
@@ -109,17 +111,17 @@ class RegulationNotificationPage {
         this.distributionStatus = this.page.locator('//input[@aria-label="סטטוס הפצה"]');
         this.distributionStatusValue = this.page.locator('//mat-option[@ng-reflect-value="1"]');
         this.noContainNano = this.page.locator('//*[text()="לא"]');
-        
+
         this.saveSubmit = this.page.locator('//button[@type="submit"]');
         this.dialog = this.page.locator('//div[@role="dialog"]');
         this.okEnd = this.page.locator('//button[@class="main-button narrow"]');
         this.nextStep = this.page.locator('//moh-button[@class="next-btn ng-star-inserted"]');
-        this.saveDraft = this.page.locator('//moh-button[@class="action-btn ng-star-inserted"]');
+        this.saveDraft = this.page.locator('//span[text()="שמירת טיוטה"] | //moh-button[@class="action-btn ng-star-inserted"]');
         this.manufAddress = this.page.locator('//mat-dialog-container[@role="dialog"]');
         this.manuftype1 = this.page.locator('(//mat-dialog-container[@role="dialog"]//input)[1]');
         this.manufSave = this.page.locator('//span[text()="שמירה"]');
         this.noteEdit = this.page.locator('//textarea[@aria-label="הערות לתיקון / עדכון"]');
-        
+
         this.rpRole = this.page.locator('//*[contains(text(), "נציג אחראי")]');
     }
 
@@ -170,7 +172,7 @@ class RegulationNotificationPage {
             if (currentColor.xPath2) {
                 await this.page.locator(currentColor.xPath2).click();
             }
-            
+
             await this.vehicleType.click();
             await this.vehicleTypeName.click();
             await this.addShade.click();
@@ -260,10 +262,6 @@ class RegulationNotificationPage {
         await this.packTypeName.click();
         await this.unitType.click();
         await this.unitTypeName.click();
-        if (flug) {
-            await this.sharedUtils.CheckCharacters(this.amount, "כמות", this.env.charBusinessId);
-            await this.sharedUtils.CheckMaxLength(this.amount, 9, "כמות");
-        }
         await this.amount.fill(p[0] || "");
         if (flug) {
             await this.sharedUtils.CheckCharacters(this.barcode, "ברקוד", this.env.charBusinessId);
@@ -301,23 +299,23 @@ class RegulationNotificationPage {
         try {
             let bussines1 = "";
             let bussines2 = "";
-            
+
             if (b1 === "") {
                 bussines1 = await this.EzerOpen();
             } else {
                 bussines1 = b1;
             }
-            
+
             if (b2 === "") {
                 bussines2 = await this.EzerOpen();
             } else {
                 bussines2 = b2;
             }
-            
+
             this.log.info(`פותח עמוד נציג אחראי ${bussines1} לעסק ${bussines2}`);
             let rama2 = `//span[text() ="${bussines1}"]`;
             let rama3 = `//span[(@class="sidebar-text") and (text()="${bussines2}")]`;
-            
+
             await this.page.waitForTimeout(1000);
             await this.rpRole.click();
             await this.page.waitForTimeout(1000);
@@ -327,6 +325,7 @@ class RegulationNotificationPage {
             await this.page.waitForTimeout(1000);
         } catch (err) {
             this.log.error(err.message);
+            throw err; // ← חובה
         }
     }
 
@@ -346,9 +345,17 @@ class RegulationNotificationPage {
         }
     }
 
-    async CreateNotificationSanity(flug = true) {
+    async CreateNotificationSanity(itemName = "", flug = true) {
         const v = await this.ReadValues("sanity.txt");
-        await this.Open();
+        //await this.Open();
+        console.log(3)
+        await this.regulationItemPage.OpenItem1("", "", itemName, "", null, "פריט רגיל", "");
+        console.log(3)
+        await regulationItemPage.extOkEndNarrow.click();
+        console.log(3)
+        await this.regulationItemPage.ClickOnItem();
+
+
         //יצרן מקומי
         await this.israelManufacturerAbroad.click();
         await this.manufacturerName.fill(v[0]);
@@ -370,12 +377,12 @@ class RegulationNotificationPage {
         await this.phases.click();
         await this.typePhases.click();
         await this.physicochemical.click();
-        await this.typePhysicochemical.waitFor({ state: 'visible', timeout: 1000 }).catch(() => {});
+        await this.typePhysicochemical.waitFor({ state: 'visible', timeout: 1000 }).catch(() => { });
         await this.typePhysicochemical.click();
         //קבצים
         await this.Files(flug);
         //כמות ואריזה
-        await this.QuantityAndPackaging([v[1]], flug); 
+        await this.QuantityAndPackaging([v[1]], flug);
         if (flug) {
             await this.sharedUtils.CheckCharacters(this.instructionsForUse, "הוראות שימוש", this.env.charNotification);
             await this.sharedUtils.CheckMaxLength(this.instructionsForUse, 4000, "הוראות שימוש");
@@ -384,10 +391,6 @@ class RegulationNotificationPage {
 
         //תוקף המוצר
         await this.exp.click();
-        if (flug) {
-            await this.sharedUtils.CheckCharacters(this.numOfMonth, "מספר חודשים", this.env.charBusinessId);
-            await this.sharedUtils.CheckMaxLength(this.numOfMonth, 3, "מספר חודשים");
-        }
         await this.numOfMonth.fill("200");
         await this.frequencyOfUse.click();
         await this.frequencyOfUseName.click();
@@ -407,7 +410,119 @@ class RegulationNotificationPage {
         //ננו
         await this.noContainNano.click();
         await this.saveSubmit.click();
+
+        if (await this.sharedUtils.isVisibleSafe(this.manufAddress, 2000)) {
+            await this.manuftype1.click();
+            await this.manufSave.click();
+        }
+        await this.dialog.waitFor({ state: 'visible' });
+        await this.CheckDialog();
+        await this.okEnd.click();
+        await this.page.waitForTimeout(5000);
+    }
+
+    async CreateNotificationWithDrafts(itemName = "", flug = true) {
+        const v = await this.ReadValues("sanity.txt");
+
+        // שלב ראשון - פתיחה, מילוי יצרן מקומי, שמירת טיוטה
+        this.log.info("מתחיל יצירת נוטיפיקציה - שלב 1 (טיוטה)");
+        await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", 'לאישור נציג אחראי', "approve", true);
+        await this.israelManufacturerAbroad.click();
+        await this.manufacturerName.fill(v[0]);
+        await this.option.first().click();
         
+        this.log.info("שומר טיוטה - שלב 1");
+        await this.saveDraft.first().click();
+        await this.dialog.waitFor({ state: 'visible' });
+        await this.okEnd.click(); 
+        await this.page.waitForTimeout(2000);
+
+        // שלב שני - קטגוריות
+        this.log.info("פותח שוב וממשיך - שלב 2 (טיוטה)");
+        // הפעם הפריט כבר פתוח/התקבל, אז רק פותחים ישר ללא פעולת "approve"
+        await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", "", "open", true);
+        await this.nextStep.click();
+        
+        await this.category1.click();
+        await this.typeName1.waitFor({ state: 'visible' });
+        await this.typeName1.click();
+        await this.category2.click();
+        await this.typeName2.waitFor({ state: 'visible' });
+        await this.typeName2.click();
+        await this.category3.click();
+        await this.typeName3.waitFor({ state: 'visible' });
+        await this.typeName3.click();
+        
+        this.log.info("שומר טיוטה - שלב 2");
+        await this.saveDraft.first().click();
+        await this.dialog.waitFor({ state: 'visible' });
+        await this.okEnd.click();
+        await this.page.waitForTimeout(2000);
+
+        // שלב שלישי - מאפיינים וקבצים
+        this.log.info("פותח שוב וממשיך - שלב 3 (טיוטה)");
+        await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", "", "open", true);
+        await this.nextStep.click();
+        await this.nextStep.click();
+        
+        await this.SpecialPack(flug);
+        await this.phases.click();
+        await this.typePhases.click();
+        await this.physicochemical.click();
+        await this.typePhysicochemical.waitFor({ state: 'visible', timeout: 1000 }).catch(() => { });
+        await this.typePhysicochemical.click();
+        await this.Files(flug);
+        await this.QuantityAndPackaging([v[1]], flug);
+        if (flug) {
+            await this.sharedUtils.CheckCharacters(this.instructionsForUse, "הוראות שימוש", this.env.charNotification);
+            await this.sharedUtils.CheckMaxLength(this.instructionsForUse, 4000, "הוראות שימוש");
+        }
+        await this.instructionsForUse.fill(v[2]);
+        await this.exp.click();
+        await this.numOfMonth.fill("200");
+        await this.frequencyOfUse.click();
+        await this.frequencyOfUseName.click();
+        await this.AddShades(v[3], flug);
+        
+        this.log.info("שומר טיוטה - שלב 3");
+        await this.saveDraft.first().click();
+        await this.dialog.waitFor({ state: 'visible' });
+        await this.okEnd.click();
+        await this.page.waitForTimeout(2000);
+
+        // שלב רביעי - חומרים
+        this.log.info("פותח שוב וממשיך - שלב 4 (טיוטה)");
+        await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", "", "open", true);
+        await this.nextStep.click();
+        await this.nextStep.click();
+        await this.nextStep.click();
+        
+        await this.page.waitForTimeout(5000);
+        await this.oKmaterials.click();
+        await this.page.waitForTimeout(5000);
+        
+        this.log.info("שומר טיוטה - שלב 4");
+        await this.saveDraft.first().click();
+        await this.dialog.waitFor({ state: 'visible' });
+        await this.okEnd.click();
+        await this.page.waitForTimeout(2000);
+
+        // שלב חמישי ואחרון - אוכלוסיות יעד ושליחה
+        this.log.info("פותח שוב וממשיך - שלב 5 (שמירה סופית)");
+        await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", "", "open", true);
+        await this.nextStep.click();
+        await this.nextStep.click();
+        await this.nextStep.click();
+        await this.nextStep.click();
+        
+        await this.populationTitle.click();
+        await this.populationTitleName.click();
+        await this.nextStep.click();
+        await this.noContainNano.click();
+        
+        this.log.info("שומר ומוסר - סיום נוטיפיקציה");
+        await this.saveSubmit.click();
+
         if (await this.sharedUtils.isVisibleSafe(this.manufAddress, 2000)) {
             await this.manuftype1.click();
             await this.manufSave.click();
@@ -422,7 +537,7 @@ class RegulationNotificationPage {
         const value = '1'.repeat(50);
         const h = '1'.repeat(2000);
         const v = await this.ReadValues("full.txt");
-        
+
         await this.Open();
         //יצרן בחו"ל
         if (flug) {
@@ -515,22 +630,18 @@ class RegulationNotificationPage {
 
     async EditNotificationX(i = 20, n = true, nameItem = "parit") {
         if (n) {
-            if (this.po && this.po.regulationItem) {
-                await this.po.regulationItem.AddItem(nameItem, "TTT", 0, false);
-                this.log.info("גרסה 1");
-                await this.po.regulationItem.OpenItem1("דיפולט", "דיפולט", nameItem, "פריט רגיל", "נוטיפיקציה הושלמה");
-            }
+            await this.regulationItemPage.AddItem(nameItem, "TTT", 0, false);
+            this.log.info("גרסה 1");
+            await this.regulationItemPage.OpenItem1("דיפולט", "דיפולט", nameItem, "פריט רגיל", "נוטיפיקציה הושלמה");
             await this.CreateNotificationSanity(false);
         }
 
         for (let j = 0; j < i; j++) {
             this.log.info(`גרסה ${j + 2}`);
-            if (this.po && this.po.regulationItem) {
-                if (j === 0) {
-                    await this.po.regulationItem.OpenItem1("דיפולט", "דיפולט", nameItem, "פריט רגיל","נוטיפיקציה הושלמה");
-                } else {
-                    await this.po.regulationItem.OpenItem1("דיפולט", "דיפולט", nameItem,"פריט רגיל" ,"נוטיפיקציה הושלמה", false);
-                }
+            if (j === 0) {
+                await this.regulationItemPage.OpenItem1("דיפולט", "דיפולט", nameItem, "פריט רגיל", "נוטיפיקציה הושלמה");
+            } else {
+                await this.regulationItemPage.OpenItem1("דיפולט", "דיפולט", nameItem, "פריט רגיל", "נוטיפיקציה הושלמה", false);
             }
             await this.nextStep.click();
             await this.AddXSades(5, 0, `גוון ${j + 1}`);

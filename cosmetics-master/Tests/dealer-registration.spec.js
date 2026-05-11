@@ -87,8 +87,21 @@ test.describe('רישום עוסק בתמרוק', () => {
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
     });
-    test('רישום עוסק בתמרוק תאגיד ע"י לא מנכל ולא נושא משרה', async ({ page }) => {
+      test('רישום עוסק בתמרוק לא תאגיד מהיר ללא בדיקות', async ({ page }) => {
+        await dealerPage.RegulationDealerBusiness(false, 0);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
+        const text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+    });
+    test('רישום עוסק בתמרוק תאגיד ע"י לא מנכל, המנכל לא תושב ישראל ולא נושא משרה', async ({ page }) => {
         await dealerPage.NoMancal();
+        await expect(dealerPage.errorNoMancal).toBeVisible();
+        const errorText = await dealerPage.errorNoMancal.textContent();
+        expect(errorText).toContain('אינך מורשה להמשיך בתהליך');
+    });
+    test('רישום עוסק בתמרוק תאגיד ע"י לא מנכל והמנכל תושב ישראל', async ({ page }) => {
+        await dealerPage.NoMancalIsraeliResident();
         await expect(dealerPage.errorNoMancal).toBeVisible();
         const errorText = await dealerPage.errorNoMancal.textContent();
         expect(errorText).toContain('אינך מורשה להמשיך בתהליך');
@@ -98,6 +111,23 @@ test.describe('רישום עוסק בתמרוק', () => {
         await expect(dealerPage.errorIncompatibleId).toBeVisible();
         const errorText = await dealerPage.errorIncompatibleId.textContent();
         expect(errorText).toContain('מספר זהות לא תקין');
+    });
+    test('רישום עוסק בתמרוק תאגיד עם מספר זיהוי שכבר קיים במאגר', async ({ page }) => {
+        // נייצר מספר זיהוי רנדומלי תקין
+        const randomId = await po.GetRandomValidID();
+        
+        // שלב 1: רישום ראשון כדי שהמספר ייווצר ויישמר במערכת (ללא ולידציות של תווים כדי לרוץ מהר)
+        await dealerPage.RegulationDealerBusiness(false, 1, "תאגיד מקורי", randomId);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 15000 });
+        const text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+
+        // שלב 2: ניסיון רישום שני עם אותו מספר זיהוי בדיוק
+        await dealerPage.DealerAlreadyRegistered("תאגיד כפול", randomId);
+        await expect(dealerPage.errorAlreadyRegistered).toBeVisible();
+        const errorText = await dealerPage.errorAlreadyRegistered.textContent();
+        expect(errorText).toContain('העסק כבר קיים במערכת');
     });
     test('הקמת עוסק בתמרוק תאגיד ומינוי עובד ממונה ברישום', async ({ page }) => {
         await dealerPage.AuthorizedEmployeeDealer();

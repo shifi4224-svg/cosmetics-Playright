@@ -156,7 +156,7 @@ test.describe('רישום נציג אחראי (3 סוגים)', () => {
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
     });
-        test('רישום נציג אחראי בודד עם תוים מיוחדים', async ({ page }) => {
+    test('רישום נציג אחראי בודד עם תוים מיוחדים', async ({ page }) => {
         // מריץ את מתודת הרישום לנציג אחראי בודד
         await regulationRPPage.RegulationToRP(" - בודד");
         await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
@@ -164,4 +164,13 @@ test.describe('רישום נציג אחראי (3 סוגים)', () => {
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
     });
+    test('בדיקת מקטע פרטי התקשרות', async ({ page }) => {
+        // מריץ את מתודת הבדיקה
+        await regulationRPPage.PublicCheck(RegulationRPPage.yesCorporation);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
+        const text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+    });
+
 });
