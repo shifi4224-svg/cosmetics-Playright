@@ -160,12 +160,19 @@ test.describe('רישום עוסק בתמרוק', () => {
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
     });
-    test('רישום עוסק בתמרוק לא תאגיד עם שליחת תוים מיוחדים', async ({ page }) => {
-        await dealerPage.RegulationDealerBusiness(false, 0, this.charBusinessName);
-        await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
-        const text = await dealerPage.dialog.textContent();
-        expect(text).toContain('בהצלחה');
-        await dealerPage.okEnd.click();
+    test('רישום עוסק בתמרוק - בדיקת תווים מאופשרים ושמירה', async ({ page }) => {
+        test.setTimeout(3600000); // שעה — הטסט בודק כל תו בכל שדה
+        await dealerPage.RegulationDealerBusinessCharTest(0, "בדיקת תווים");
+
+        try {
+            await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
+            const text = await dealerPage.dialog.textContent();
+            expect(text).toContain('בהצלחה');
+            await dealerPage.okEnd.click();
+        } catch (err) {
+            await page.pause();
+            throw err;
+        }
     });
 
 });

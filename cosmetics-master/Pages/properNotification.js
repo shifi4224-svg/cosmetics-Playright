@@ -38,14 +38,14 @@ class ProperNotificationPage {
         this.zipCode = this.page.locator('//input[@aria-label="מיקוד"]');
         this.addressNotes = this.page.locator('//input[@aria-label="הערות לכתובת"]');
         this.productManufacturerName = this.page.locator('//input[@aria-label="שם יצרן התמרוק"]');
-        this.yesFirstQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properEUAlerts"]//*[@ng-reflect-aria-label="כן"]');
-        this.noFirstQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properEUAlerts"]//*[@ng-reflect-aria-label="לא"]');
-        this.yesSecondQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properSafe"]//*[@ng-reflect-aria-label="כן"]');
-        this.noSecondQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properSafe"]//*[@ng-reflect-aria-label="לא"]');
-        this.yesThirdQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properFile"]//*[@ng-reflect-aria-label="כן"]');
-        this.noThirdQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properFile"]//*[@ng-reflect-aria-label="לא"]');
-        this.yesFourthQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properCannabidiol"]//*[@ng-reflect-aria-label="כן"]');
-        this.noFourthQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properCannabidiol"]//*[@ng-reflect-aria-label="לא"]');
+        this.yesFirstQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properEUAlerts"]//*[text()="כן"]');
+        this.noFirstQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properEUAlerts"]//*[text()="לא"]');
+        this.yesSecondQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properSafe"]//*[text()="כן"]');
+        this.noSecondQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properSafe"]//*[text()="לא"]');
+        this.yesThirdQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properFile"]//*[text()="כן"]');
+        this.noThirdQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properFile"]//*[text()="לא"]');
+        this.yesFourthQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properCannabidiol"]//*[text()="כן"]');
+        this.noFourthQuestion = this.page.locator('//moh-button-toggle[@formcontrolname="properCannabidiol"]//*[text()="לא"]');
         this.languageReferenceCountry = this.page.locator('//input[@aria-label="שם התמרוק בשפת מדינת ההסתמכות בה התמרוק משווק"]');
         this.cosmeticCategory1 = this.page.locator('//input[@aria-label="קטגוריית תמרוק 1"]');
         this.category1Skin = this.page.locator('//*[contains(text(), "מוצרים לעור")]//..//span');
@@ -78,11 +78,11 @@ class ProperNotificationPage {
         this.barcode = this.page.locator('//input[@aria-label="ברקוד"]');
         this.outerPackaging = this.page.locator('//input[@ng-reflect-text-key="hasSecondPack"]');
         this.instructions = this.page.locator('//textarea[@aria-label="הוראות שימוש"]');
-        this.exp = this.page.locator('//mat-radio-button[@ng-reflect-value="1"]');
-        this.pao = this.page.locator('//mat-radio-button[@ng-reflect-value="2"]');
+        this.exp = this.page.locator('//moh-radiobutton-group[@formcontrolname="expOrPao"]//input[@value="1"]');
+        this.pao = this.page.locator('//moh-radiobutton-group[@formcontrolname="expOrPao"]//input[@value="2"]');
         this.numberOfMonths = this.page.locator('//input[@aria-label="מספר חודשים"]');
         this.frequencyOfUse = this.page.locator('//input[@aria-label="תדירות שימוש"]');
-        this.twiceADay = this.page.locator('//mat-option[@id="mat-option-611"]');
+        this.twiceADay = this.page.locator('//span[text()=" שימוש יומיומי "]');
         this.yesShades = this.page.locator('//button[@id="mat-button-toggle-16-button"]');
         this.shade = this.page.locator('//input[@aria-label="שם הגוון"]');
         this.shadesFile = this.page.locator('(//mat-cell//span[text()="בחר קובץ"])[2]');
@@ -335,7 +335,34 @@ class ProperNotificationPage {
         await this.noFourthQuestion.click();
 
         const langAllowed       = await this.sharedUtils.CheckCharactersAndGetAllowed(this.languageReferenceCountry, "שם תמרוק בשפת מדינת הסתמכות");
-        await this.languageReferenceCountry.fill(langAllowed || "A");
+        // בדיקת תווים ממספר שפות: צרפתית(é), ספרדית(ñ), גרמנית(ü), איטלקית(à), פורטוגזית(ã), שוויצרית(ö),
+        //                          יוונית(α), ערבית(ع), יפנית(あ), סינית(中), רוסית(я), קוריאנית(한)
+        const multiLangChars = 'éñüàãöαعあ中я한';
+        const multiLangAllowed = [];
+        for (const ch of multiLangChars) {
+            await this.languageReferenceCountry.clear();
+            await this.languageReferenceCountry.fill(ch);
+            const val = await this.languageReferenceCountry.inputValue();
+            await this.page.keyboard.press('Tab');
+            await this.page.waitForTimeout(50);
+            await this.languageReferenceCountry.click();
+
+            let isBlocked = false;
+            if (val !== ch) {
+                isBlocked = true;
+            } else if (await this.sharedUtils.isVisibleSafe('//span[contains(text(), "תו לא חוקי")]', 100)) {
+                isBlocked = true;
+            }
+
+            if (!isBlocked) {
+                multiLangAllowed.push(ch);
+                this.log.info(`✅ תו "${ch}" מאופשר בשדה שם תמרוק בשפת מדינת הסתמכות`);
+            } else {
+                this.log.info(`ℹ️ תו "${ch}" חסום בשדה שם תמרוק בשפת מדינת הסתמכות`);
+            }
+        }
+        await this.languageReferenceCountry.clear();
+        await this.languageReferenceCountry.fill((langAllowed || "A") + multiLangAllowed.join(''));
 
         await this.nextStep.click();
 

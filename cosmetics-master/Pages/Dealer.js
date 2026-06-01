@@ -270,6 +270,112 @@ class DealerPage {
         await this.page.waitForTimeout(5000);
     }
 
+    async RegulationDealerBusinessCharTest(co = 0, name = "") {
+        this.log.info("מתחיל רישום עוסק בתמרוק - בדיקת תווים מאופשרים");
+
+        const randomId = await this.sharedUtils.GetRandomValidID();
+        const t = await this.ReadIdName(randomId, name);
+
+        await this.orderButton.waitFor({ state: 'visible' });
+        await this.orderButton.click();
+
+        if (await this.isVisibleSafe(this.dialog, 3000)) {
+            await this.okEnd.click();
+        }
+
+        await this.tamrukimButton1.click();
+
+        if (co === 1) {
+            await this.yesCorporation.click();
+        }
+
+        await this.legalEntity.click();
+        await this.authorized.click();
+
+        // שם העסק — בדיקת תווים + מילוי שם בסיס עם תווים מאופשרים
+        const businessNameAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.businessName, "שם העסק");
+        await this.businessName.fill(t[1] + (businessNameAllowed || ""));
+
+        // מספר מזהה — בדיקת תווים אבל מכניסים ת.ז רנדומלית תקינה
+        await this.sharedUtils.CheckCharactersAndGetAllowed(this.businessId, "מספר מזהה");
+        await this.businessId.fill(randomId);
+
+        await this.nextStep.click();
+
+        if (await this.CheckError() === true) {
+            this.log.info("שגיאה בשלב 1");
+            return;
+        }
+
+        if (co === 1) {
+            await this.nextStep.click();
+        }
+
+        // תפקידים
+        await this.supplierCheckbox.click();
+        await this.rPCheckbox.click();
+
+        // כתובת — ממלאים ישירות, ובדיקת תווים על השדות החופשיים
+        await this.address.telefon.first().fill(this.env.telefon);
+        await this.address.email.first().fill(this.env.email);
+
+        try {
+            await this.address.city.first().fill("שחר");
+            await this.address.nameCity.first().waitFor({ state: 'visible', timeout: 5000 });
+            await this.address.nameCity.first().click();
+            await this.address.street.first().fill("הבציר");
+            await this.address.nameStreet.first().waitFor({ state: 'visible', timeout: 5000 });
+            await this.address.nameStreet.first().click();
+        } catch (err) {
+            this.log.error('תקלה בבחירת עיר/רחוב', err);
+            throw err;
+        }
+
+        await this.address.houseNumber.first().fill(this.env.houseNumber);
+
+        // הערות לכתובת — בדיקת תווים + מילוי
+        const addrNotesAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.address.addressNotes, "הערות לכתובת");
+        await this.address.addressNotes.first().fill(addrNotesAllowed || "א");
+
+        await this.address.addressType.first().click();
+        await this.address.otherAddress.first().waitFor({ state: 'visible' });
+        await this.address.otherAddress.first().click();
+
+        // סוג כתובת אחר — בדיקת תווים + מילוי
+        const otherAddrAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.address.otherAddressType, "סוג כתובת אחר");
+        await this.address.otherAddressType.first().fill(otherAddrAllowed || "א");
+
+        await this.oK1.click();
+        await this.oK2.click();
+        await this.nextStep.click();
+
+        if (await this.CheckError() === true) {
+            this.log.info("שגיאה בשלב 2");
+            return;
+        }
+
+        await this.businessLicenseRequired.click();
+
+        if (!(await this.isVisibleSafe(this.mySelfDeclaration, 1000))) {
+            await this.page.locator('//*[@aria-label="הוספת כתובת"]').click();
+        }
+
+        await this.mySelfDeclaration.click();
+        await this.accuracyOfData1.click();
+        await this.accuracyOfData2.click();
+        await this.saveSubmit.click();
+        await this.page.waitForTimeout(6000);
+
+        if (await this.isVisibleSafe(this.dialog, 4000)) {
+            const dialogText = await this.dialog.textContent();
+            this.log.info("תוצאת הרישום: " + dialogText);
+            if (dialogText.includes("בהצלחה")) {
+                const oldfilepath = this.po.dataFolder + '\\RP.txt';
+                await this.sharedUtils.WriteFile(oldfilepath, t[1]);
+            }
+        }
+    }
+
     async DealerAlreadyRegistered(name = "תאגיד קיים", idd = "518776767") {
         console.log("רישום עוסק בתמרוק תאגיד - בדיקת מספר זיהוי שכבר קיים במאגר");
         try {

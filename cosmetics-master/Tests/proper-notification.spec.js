@@ -47,8 +47,8 @@ test.describe('בדיקות הקמת נוטיפיקציה נאותה', () => {
         const itemNameH = `בדיקת תווים נאות ${uniqueId}`;
         const itemNameE = `Proper Char Test ${uniqueId}`;
 
-        // שלב 1: מנכ"ל מוסיף פריט נאות למאגר
-        await regulationItemPage.AddItem(itemNameH, itemNameE, 1, false);
+        // שלב 1: מנכ"ל מוסיף פריט נאות למאגר — כולל בדיקת תווים בשדות השם
+        await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 1);
 
         // שלב 2: ממלא כל שדה בתווים שמאופשרים בפועל ושולח
         await properNotificationPage.CreateProperNotificationCharTest(itemNameH);
