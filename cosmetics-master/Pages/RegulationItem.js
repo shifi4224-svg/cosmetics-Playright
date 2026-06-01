@@ -42,8 +42,6 @@ class RegulationItemPage {
         const b = await this.sharedUtils.OpenPageMancal();
         await this.addNew.click();
 
-        await this.page.waitForTimeout(1000); // המתנה קצרה לפתיחת חלונית בחירת מסלול
-
         if (euro === 1) {
             await this.europeanRoute.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {
                 throw new Error("הכפתור 'מסלול אירופאי' לא נמצא במסך. יוצא מהפונקציה ומכשיל את הטסט.");
@@ -57,7 +55,7 @@ class RegulationItemPage {
             await this.basicRoute.first().click({ force: true });
         }
 
-        await this.page.waitForTimeout(2000);
+        await this.hebrewCosmetics.waitFor({ state: 'visible', timeout: 5000 });
 
         if (flug) {
             await this.sharedUtils.CheckCharacters(this.hebrewCosmetics, "שם פריט בעברית", "!%&*)(_+\"W-\\[]ףץת43dדA");
@@ -75,8 +73,48 @@ class RegulationItemPage {
         await this.rPCosmetics.fill(this.env.name || "שפרה הקר");
         await this.option.click();
         await this.save.click();
+        await this.okEnd.waitFor({ state: 'visible', timeout: 5000 });
         await this.okEnd.click();
-        await this.page.reload();
+        await this.addNew.waitFor({ state: 'visible', timeout: 10000 });
+    }
+
+    async AddItemCharTest(nameH, nameE, euro = 0) {
+        const b = await this.sharedUtils.OpenPageMancal();
+        await this.addNew.click();
+
+        if (euro === 1) {
+            await this.europeanRoute.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {
+                throw new Error("הכפתור 'מסלול אירופאי' לא נמצא במסך.");
+            });
+            await this.europeanRoute.first().click({ force: true });
+            await this.okEnd.click();
+        } else {
+            await this.basicRoute.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {
+                throw new Error("הכפתור 'מסלול בסיסי' לא נמצא במסך.");
+            });
+            await this.basicRoute.first().click({ force: true });
+        }
+
+        await this.hebrewCosmetics.waitFor({ state: 'visible', timeout: 5000 });
+
+        // בדיקת תווים בעברית + מילוי: טקסט הבסיס + התווים המאופשרים
+        const hebrewAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.hebrewCosmetics, "שם פריט בעברית");
+        await this.hebrewCosmetics.fill(nameH + (hebrewAllowed || ""));
+
+        // בדיקת תווים באנגלית + מילוי: טקסט הבסיס + התווים המאופשרים
+        const englishAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.englishCosmetics, "שם פריט באנגלית");
+        await this.englishCosmetics.fill(nameE + (englishAllowed || ""));
+
+        await this.business.click();
+        await this.business.fill(b);
+        await this.option.click();
+        await this.rPCosmetics.click();
+        await this.rPCosmetics.fill(this.env.name || "שפרה הקר");
+        await this.option.click();
+        await this.save.click();
+        await this.okEnd.waitFor({ state: 'visible', timeout: 5000 });
+        await this.okEnd.click();
+        await this.addNew.waitFor({ state: 'visible', timeout: 10000 });
     }
 
     async AddMultipleItems(nameH, nameE, totalItems = 20, euro = 0) {
@@ -148,6 +186,8 @@ class RegulationItemPage {
  * @param {boolean}             openAfter   - האם לפתוח את הנוטיפיקציה אחרי האישור
  */
     async ClickOnItem(rowLocator = null, action = "approve", openAfter = true) {
+        console.log("ClickOnItem נקראה  151עם:", { action, openAfter }); // ← תוסיפי את זה
+
         try {
             const row = rowLocator
                 ? (typeof rowLocator === 'string' ? this.page.locator(rowLocator) : rowLocator)
@@ -171,10 +211,13 @@ class RegulationItemPage {
                     await approveBtn.click();
                     await this.extOkEndNarrow.click();
                     if (!openAfter) {
+                        console.log("לא נפתח נוטיפיקציה אחרי האישור, יוצא מהפונקציה. 176");
                         return; // תסריט 1: רק אישור — יוצאים
                     }
                 }
-                console.log("אחרי האופן")
+                console.log("אחרי האופן 179")
+                await this.extOkEndNarrow.click();
+
                 // תסריט 2: אישור + פתיחת הנוטיפיקציה
                 await this._openRowItem(row);
                 return;
@@ -215,7 +258,7 @@ class RegulationItemPage {
     ) {
         await this.po.regulationNotification.Open(b1, b2);
         // במקום waitForTimeout(2000) סתמי אחרי הפתיחה, תוסיפי:
-
+        console.log("מחכה שהטבלה תטען אחרי פתיחת העמוד... 221");
         const rowsSelector = this.page.locator("//mat-row");
         const paginationNext = this.page.locator("//*[@class='grid_ar_prev md moh-icon page-button']");
         const page1Button = this.page.locator('(//button[@class="page-button md ng-star-inserted"])[1]');
@@ -234,6 +277,7 @@ class RegulationItemPage {
 
                     if (rowText.includes(itemName)) {
                         this.log.info(`נמצא לפי שם בעמוד ${currentPage}, שורה ${i + 1}`);
+                        console.log("נמצא פריט לפי שם, מנסה ללחוץ עליו... 240");
                         await this.ClickOnItem(rowsSelector.nth(i), action, openAfter);
                         return true;
                     }
@@ -272,6 +316,7 @@ class RegulationItemPage {
 
                 if (rowText.includes(itemType) && rowText.includes(statusFilter)) {
                     this.log.info(`נמצא לפי סוג וסטטוס בעמוד ${currentPage}, שורה ${i + 1}`);
+                    console.log("נמצא פריט לפי סוג וסטטוס, מנסה ללחוץ עליו... 279");
                     await this.ClickOnItem(rowsSelector.nth(i), action, openAfter);
                     return true;
                 }

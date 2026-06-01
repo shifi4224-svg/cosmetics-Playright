@@ -27,7 +27,7 @@ class RegulationNotificationPage {
         this.otherAddress = this.page.locator('//*[text() = " אחר "]');
         this.otherAddressType = this.page.locator('//input[(@aria-label="סוג כתובת")and not(@aria-haspopup="listbox")]');
         this.country = this.page.locator('//input[@aria-label="מדינה"]');
-        this.countryName = this.page.locator('//mat-option[@ng-reflect-value="15"]');
+        this.countryName = this.page.locator('//mat-option[.//span[normalize-space()="ארמניה"]]');
         this.city = this.page.locator('//input[@aria-label="עיר/יישוב"]');
         this.street = this.page.locator('//input[@aria-label="רחוב"]');
         this.houseNum = this.page.locator('//input[@aria-label="מספר בית"]');
@@ -122,7 +122,7 @@ class RegulationNotificationPage {
         this.manufSave = this.page.locator('//span[text()="שמירה"]');
         this.noteEdit = this.page.locator('//textarea[@aria-label="הערות לתיקון / עדכון"]');
 
-        this.rpRole = this.page.locator('//*[contains(text(), "נציג אחראי")]');
+        this.rpRole = this.page.locator('//span[@class="sidebar-text ng-star-inserted" and text()="נציג אחראי"]');
     }
 
     async AddKit(k, flug = true) {
@@ -182,7 +182,7 @@ class RegulationNotificationPage {
         this.log.info(`הושלמה הוספת ${totalShades} גוונים!`);
     }
 
-    async AddShades(s, flug = true, e = 1) {
+    async AddShades(s = "ירוק", flug = true, e = 1) {
         try {
             await this.yesShades.click();
             if (flug) {
@@ -191,6 +191,7 @@ class RegulationNotificationPage {
             }
             await this.shadesName.fill(s);
             await this.selectFileShades.click();
+            console.log("נלחץ על כפתור בחירת קובץ לגוון 194");
             if (flug) {
                 await this.filesPage.TestFileTypeValidation(this.typeFileShades, "גוון");
             }
@@ -348,12 +349,11 @@ class RegulationNotificationPage {
     async CreateNotificationSanity(itemName = "", flug = true) {
         const v = await this.ReadValues("sanity.txt");
         //await this.Open();
-        console.log(3)
-        await this.regulationItemPage.OpenItem1("", "", itemName, "", null, "פריט רגיל", "");
-        console.log(3)
-        await regulationItemPage.extOkEndNarrow.click();
-        console.log(3)
-        await this.regulationItemPage.ClickOnItem();
+        console.log(351)
+        await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", null, "approve", true);
+        console.log(353)
+        console.log(354)
+        // await this.regulationItemPage.ClickOnItem();
 
 
         //יצרן מקומי
@@ -417,8 +417,6 @@ class RegulationNotificationPage {
         }
         await this.dialog.waitFor({ state: 'visible' });
         await this.CheckDialog();
-        await this.okEnd.click();
-        await this.page.waitForTimeout(5000);
     }
 
     async CreateNotificationWithDrafts(itemName = "", flug = true) {
@@ -430,11 +428,11 @@ class RegulationNotificationPage {
         await this.israelManufacturerAbroad.click();
         await this.manufacturerName.fill(v[0]);
         await this.option.first().click();
-        
+
         this.log.info("שומר טיוטה - שלב 1");
         await this.saveDraft.first().click();
         await this.dialog.waitFor({ state: 'visible' });
-        await this.okEnd.click(); 
+        await this.okEnd.click();
         await this.page.waitForTimeout(2000);
 
         // שלב שני - קטגוריות
@@ -442,7 +440,7 @@ class RegulationNotificationPage {
         // הפעם הפריט כבר פתוח/התקבל, אז רק פותחים ישר ללא פעולת "approve"
         await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", "", "open", true);
         await this.nextStep.click();
-        
+
         await this.category1.click();
         await this.typeName1.waitFor({ state: 'visible' });
         await this.typeName1.click();
@@ -452,7 +450,7 @@ class RegulationNotificationPage {
         await this.category3.click();
         await this.typeName3.waitFor({ state: 'visible' });
         await this.typeName3.click();
-        
+
         this.log.info("שומר טיוטה - שלב 2");
         await this.saveDraft.first().click();
         await this.dialog.waitFor({ state: 'visible' });
@@ -464,7 +462,7 @@ class RegulationNotificationPage {
         await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", "", "open", true);
         await this.nextStep.click();
         await this.nextStep.click();
-        
+
         await this.SpecialPack(flug);
         await this.phases.click();
         await this.typePhases.click();
@@ -483,7 +481,7 @@ class RegulationNotificationPage {
         await this.frequencyOfUse.click();
         await this.frequencyOfUseName.click();
         await this.AddShades(v[3], flug);
-        
+
         this.log.info("שומר טיוטה - שלב 3");
         await this.saveDraft.first().click();
         await this.dialog.waitFor({ state: 'visible' });
@@ -496,11 +494,11 @@ class RegulationNotificationPage {
         await this.nextStep.click();
         await this.nextStep.click();
         await this.nextStep.click();
-        
+
         await this.page.waitForTimeout(5000);
         await this.oKmaterials.click();
         await this.page.waitForTimeout(5000);
-        
+
         this.log.info("שומר טיוטה - שלב 4");
         await this.saveDraft.first().click();
         await this.dialog.waitFor({ state: 'visible' });
@@ -514,12 +512,12 @@ class RegulationNotificationPage {
         await this.nextStep.click();
         await this.nextStep.click();
         await this.nextStep.click();
-        
+
         await this.populationTitle.click();
         await this.populationTitleName.click();
         await this.nextStep.click();
         await this.noContainNano.click();
-        
+
         this.log.info("שומר ומוסר - סיום נוטיפיקציה");
         await this.saveSubmit.click();
 
@@ -531,6 +529,161 @@ class RegulationNotificationPage {
         await this.CheckDialog();
         await this.okEnd.click();
         await this.page.waitForTimeout(5000);
+    }
+
+    GenerateMaxCharString(allowedChars, maxLength) {
+        if (!allowedChars) return '1'.repeat(maxLength);
+        let result = '';
+        while (result.length < maxLength) {
+            result += allowedChars;
+        }
+        return result.substring(0, maxLength);
+    }
+
+    async CreateNotificationMaxValidData(itemName = "") {
+        this.log.info("מתחיל יצירת נוטיפיקציה - בדיקת שליחה עם מקסימום תווים מורשים");
+        
+        // פתיחת הפריט (כנציג אחראי)
+        await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", 'לאישור נציג אחראי', "approve", true);
+
+        // יצרן בחו"ל
+        await this.overseasManufacturerAbroad.click();
+        
+        const manufName = this.GenerateMaxCharString(this.env.charManufactor, 200);
+        await this.manufacturerName.fill(manufName);
+
+        await this.addressType.click();
+        await this.otherAddress.click();
+        
+        const otherAddr = this.GenerateMaxCharString(this.env.charOtherAddress, 400);
+        await this.otherAddressType.fill(otherAddr);
+
+        await this.country.click();
+        await this.countryName.click();
+
+        const cityVal = this.GenerateMaxCharString(this.env.charNotification, 50);
+        await this.city.fill(cityVal);
+        
+        const streetVal = this.GenerateMaxCharString(this.env.charNotification, 50);
+        await this.street.fill(streetVal);
+
+        const houseNumVal = this.GenerateMaxCharString(this.env.charBusinessId, 10);
+        await this.houseNum.fill(houseNumVal);
+
+        const zipCodeVal = this.GenerateMaxCharString(this.env.charBusinessId, 10);
+        await this.zipCode.fill(zipCodeVal);
+
+        const addrNotesVal = this.GenerateMaxCharString(this.env.charNotification, 200);
+        await this.addressNotes.fill(addrNotesVal);
+
+        await this.cosmeticImport.click();
+        await this.cosmeticImportValue3.click();
+        await this.cosmeticImportValue3CheckBox1.click();
+        await this.cosmeticImportValue3CheckBox2.click();
+
+        await this.nextStep.click();
+
+        // קטגוריות
+        await this.category1.click();
+        await this.typeName1.waitFor({ state: 'visible' });
+        await this.typeName1.click();
+        await this.category2.click();
+        await this.typeName2.waitFor({ state: 'visible' });
+        await this.typeName2.click();
+        await this.category3.click();
+        await this.typeName3.waitFor({ state: 'visible' });
+        await this.typeName3.click();
+
+        // מאפייני התמרוק - אריזה מיוחדת
+        await this.specialPackCheckBox.click();
+        await this.specialPack.click();
+        await this.specialPackValue.click();
+        const otherSpecialPackVal = this.GenerateMaxCharString(this.env.charNotification, 50);
+        await this.otherspecialPack.fill(otherSpecialPackVal);
+
+        await this.washable.click();
+        await this.granules.click();
+
+        // תיאור התמרוק
+        await this.phases.click();
+        await this.typePhases.click();
+        await this.physicochemical.click();
+        await this.typePhysicochemical.waitFor({ state: 'visible', timeout: 1000 }).catch(() => {});
+        await this.typePhysicochemical.click();
+
+        // קבצים
+        await this.Files(false);
+
+        // כמות ואריזה
+        await this.packType.click();
+        await this.packTypeName.click();
+        await this.unitType.click();
+        await this.unitTypeName.click();
+        await this.amount.fill("100");
+        const barcodeVal = this.GenerateMaxCharString(this.env.charBusinessId, 9);
+        await this.barcode.fill(barcodeVal);
+
+        const instructionsVal = this.GenerateMaxCharString(this.env.charNotification, 4000);
+        await this.instructionsForUse.fill(instructionsVal);
+
+        // תוקף המוצר
+        await this.exp.click();
+        const monthVal = "120"; 
+        await this.numOfMonth.fill(monthVal);
+
+        await this.frequencyOfUse.click();
+        await this.frequencyOfUseName.click();
+
+        // גוונים
+        await this.yesShades.click();
+        const shadeVal = this.GenerateMaxCharString(this.env.charNotification, 50);
+        await this.shadesName.fill(shadeVal);
+        await this.selectFileShades.click();
+        await this.filesPage.AtachFile(this.typeFileShades, "Doc1.pdf", "גוון");
+        await this.selectColor.click();
+        await this.colorWhite.click();
+        await this.vehicleType.click();
+        await this.vehicleTypeName.click();
+        await this.page.waitForTimeout(1000);
+        await this.addShade.click();
+
+        await this.nextStep.click();
+
+        // חומרים
+        await this.page.waitForTimeout(5000);
+        await this.oKmaterials.click();
+        await this.page.waitForTimeout(5000);
+        await this.nextStep.click();
+        await this.nextStep.click();
+
+        // טענות שיווקיות
+        await this.panelOther.click();
+        await this.panelOtherCheckBox.click();
+        const otherClaimVal = this.GenerateMaxCharString(this.env.charNotification, 200);
+        await this.panelOtherValue.fill(otherClaimVal);
+
+        // אוכלוסית יעד
+        await this.populationTitle.click();
+        await this.populationTitleName.click();
+
+        // סטטוס הפצה
+        await this.distributionStatusCheckBox.click();
+        await this.distributionStatus.click();
+        const distStatusVal = this.GenerateMaxCharString(this.env.charNotification, 50);
+        await this.distributionStatusValue.fill(distStatusVal);
+
+        await this.nextStep.click();
+
+        // ננו
+        await this.noContainNano.click();
+        await this.saveSubmit.click();
+
+        if (await this.sharedUtils.isVisibleSafe(this.manufAddress, 2000)) {
+            await this.manuftype1.click();
+            await this.manufSave.click();
+        }
+        await this.dialog.waitFor({ state: 'visible' });
+        await this.CheckDialog();
     }
 
     async CreateNotificationFull(flug = true) {
@@ -628,12 +781,162 @@ class RegulationNotificationPage {
         await this.page.waitForTimeout(5000);
     }
 
+    async CreateNotificationCharTest(itemName = "") {
+        this.log.info("מתחיל יצירת נוטיפיקציה - בדיקת תווים מאופשרים בכל שדה");
+
+        await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", 'לאישור נציג אחראי', "approve", true);
+
+        // --- שלב 1: יצרן בחו"ל ---
+        await this.overseasManufacturerAbroad.click();
+
+        const manufNameAllowed    = await this.sharedUtils.CheckCharactersAndGetAllowed(this.manufacturerName,   "שם יצרן בחול");
+        await this.manufacturerName.fill(manufNameAllowed || "A");
+
+        await this.addressType.click();
+        await this.otherAddress.click();
+
+        const otherAddrAllowed    = await this.sharedUtils.CheckCharactersAndGetAllowed(this.otherAddressType,   "סוג כתובת אחר");
+        await this.otherAddressType.fill(otherAddrAllowed || "A");
+
+        await this.country.click();
+        await this.countryName.click();
+
+        const cityAllowed         = await this.sharedUtils.CheckCharactersAndGetAllowed(this.city,               "עיר/ישוב");
+        await this.city.fill(cityAllowed || "A");
+
+        const streetAllowed       = await this.sharedUtils.CheckCharactersAndGetAllowed(this.street,             "רחוב");
+        await this.street.fill(streetAllowed || "A");
+
+        const houseNumAllowed     = await this.sharedUtils.CheckCharactersAndGetAllowed(this.houseNum,           "מספר בית");
+        await this.houseNum.fill(houseNumAllowed || "1");
+
+        const zipCodeAllowed      = await this.sharedUtils.CheckCharactersAndGetAllowed(this.zipCode,            "מיקוד");
+        await this.zipCode.fill(zipCodeAllowed || "1");
+
+        const addrNotesAllowed    = await this.sharedUtils.CheckCharactersAndGetAllowed(this.addressNotes,       "הערות לכתובת");
+        await this.addressNotes.fill(addrNotesAllowed || "A");
+
+        await this.cosmeticImport.click();
+        await this.cosmeticImportValue3.click();
+        await this.cosmeticImportValue3CheckBox1.click();
+        await this.cosmeticImportValue3CheckBox2.click();
+
+        await this.nextStep.click();
+
+        // --- שלב 2: קטגוריות ---
+        await this.category1.click();
+        await this.typeName1.waitFor({ state: 'visible' });
+        await this.typeName1.click();
+        await this.category2.click();
+        await this.typeName2.waitFor({ state: 'visible' });
+        await this.typeName2.click();
+        await this.category3.click();
+        await this.typeName3.waitFor({ state: 'visible' });
+        await this.typeName3.click();
+
+        // --- שלב 3: מאפיינים ---
+        await this.specialPackCheckBox.click();
+        await this.specialPack.click();
+        await this.specialPackValue.click();
+
+        const otherSpecialPackAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.otherspecialPack, "אריזה מיוחדת אחר");
+        await this.otherspecialPack.fill(otherSpecialPackAllowed || "A");
+
+        // --- שלב 4: תיאור התמרוק ---
+        await this.phases.click();
+        await this.typePhases.click();
+        await this.physicochemical.click();
+        await this.typePhysicochemical.waitFor({ state: 'visible', timeout: 1000 }).catch(() => {});
+        await this.typePhysicochemical.click();
+
+        // --- שלב 5: קבצים ---
+        await this.Files(false);
+
+        // --- שלב 6: כמות ואריזה ---
+        await this.packType.click();
+        await this.packTypeName.click();
+        await this.unitType.click();
+        await this.unitTypeName.click();
+        await this.amount.fill("10");
+
+        const barcodeAllowed      = await this.sharedUtils.CheckCharactersAndGetAllowed(this.barcode,            "ברקוד");
+        await this.barcode.fill(barcodeAllowed || "1");
+
+        // הוראות שימוש - שדה textarea ארוך: בודקים גם תווים וגם ירידת שורה
+        const instrAllowed        = await this.sharedUtils.CheckCharactersAndGetAllowed(this.instructionsForUse,  "הוראות שימוש");
+        const instrNewline        = await this.sharedUtils.CheckNewlineAllowed(this.instructionsForUse,           "הוראות שימוש");
+        const instrValue          = instrNewline
+            ? (instrAllowed || "A") + "\n" + (instrAllowed || "A")
+            : (instrAllowed || "A");
+        await this.instructionsForUse.fill(instrValue);
+
+        // --- שלב 7: תוקף ---
+        await this.exp.click();
+        await this.numOfMonth.fill("12");
+        await this.frequencyOfUse.click();
+        await this.frequencyOfUseName.click();
+
+        // --- שלב 8: גוונים ---
+        await this.yesShades.click();
+        const shadeNameAllowed    = await this.sharedUtils.CheckCharactersAndGetAllowed(this.shadesName,         "שם הגוון");
+        await this.shadesName.fill(shadeNameAllowed || "A");
+        await this.filesPage.AtachFile(this.typeFileShades, "Doc1.pdf", "גוון");
+        await this.selectColor.click();
+        await this.colorWhite.click();
+        await this.vehicleType.click();
+        await this.vehicleTypeName.click();
+        await this.page.waitForTimeout(1000);
+        await this.addShade.click();
+
+        await this.nextStep.click();
+
+        // --- שלב 9: חומרים ---
+        await this.page.waitForTimeout(5000);
+        await this.oKmaterials.click();
+        await this.page.waitForTimeout(5000);
+        await this.nextStep.click();
+        await this.nextStep.click();
+
+        // --- שלב 10: טענות שיווקיות ---
+        await this.panelOther.click();
+        await this.panelOtherCheckBox.click();
+        const otherClaimAllowed   = await this.sharedUtils.CheckCharactersAndGetAllowed(this.panelOtherValue,    "טענה שיווקית אחרת");
+        await this.panelOtherValue.fill(otherClaimAllowed || "A");
+
+        // --- שלב 11: אוכלוסיות יעד ---
+        await this.populationTitle.click();
+        await this.populationTitleName.click();
+
+        // סטטוס הפצה - מושבת בינתיים (לוקטור לא תקין)
+        // await this.distributionStatusCheckBox.click();
+        // await this.distributionStatus.click();
+        // await this.distributionStatusValue.click();
+
+        await this.nextStep.click();
+
+        // --- שלב 12: ננו ושמירה ---
+        await this.noContainNano.click();
+        await this.page.keyboard.press('F12');
+        await this.page.pause();
+        await this.saveSubmit.click();
+        await this.page.pause();
+
+        if (await this.sharedUtils.isVisibleSafe(this.manufAddress, 2000)) {
+            await this.manuftype1.click();
+            await this.manufSave.click();
+        }
+        await this.dialog.waitFor({ state: 'visible' });
+        await this.CheckDialog();
+    }
+
     async EditNotificationX(i = 20, n = true, nameItem = "parit") {
         if (n) {
             await this.regulationItemPage.AddItem(nameItem, "TTT", 0, false);
             this.log.info("גרסה 1");
             await this.regulationItemPage.OpenItem1("דיפולט", "דיפולט", nameItem, "פריט רגיל", "נוטיפיקציה הושלמה");
             await this.CreateNotificationSanity(false);
+            await this.okEnd.click();
+            await this.page.waitForTimeout(5000);
         }
 
         for (let j = 0; j < i; j++) {

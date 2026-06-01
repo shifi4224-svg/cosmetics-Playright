@@ -39,7 +39,9 @@ class FilesPage {
 
     // פונקציה לסגירת דיאלוג (רק לגוון וערכה)
     async closeFileDialog(name) {
+        console.log(`מנסה לסגור את דיאלוג הקבצים עבור סוג: ${name}  42`);
         if (name === "גוון" || name === "ערכה") {
+            console.log("נלחץ על כפתור סגירת הדיאלוג  44");
             await this.closeButton.click();
         }
     }
@@ -144,9 +146,10 @@ class FilesPage {
 
             // בדיקת תוצאה
             if (file.expected === 'ACCEPTED') {
+                console.log("מצפים שהקובץ יתקבל, בודקים אם יש הודעת שגיאה... 149");
                 // מצפים שהקובץ יתקבל
                 const isErrorDisplayed = await this.isVisibleSafe(errorLocator, 1000);
-
+                console.log("האם  152הודעת שגיאה מוצגת?", isErrorDisplayed);
                 if (!isErrorDisplayed) {
                     // מוחקים את הקובץ לפני המעבר לבדיקה הבאה
                     await this.deleteAttachedFile(uploadLocator, fname);
@@ -171,7 +174,7 @@ class FilesPage {
                 }
             }
         }
-
+        console.log("סיימתי לבדוק את כל הקבצים, 174סוג הקובץ: " + fname)
         // סגירת הדיאלוג בסוף (רק לגוון וערכה)
         await this.closeFileDialog(fname);
 

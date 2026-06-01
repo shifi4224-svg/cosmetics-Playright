@@ -3,7 +3,6 @@ const path = require('path');
 
 // ייבוא המחלקות
 const LoginPage = require('../Pages/LoginPage');
-const SharedUtils = require('../Pages/SharedUtils');
 const RegulationNotificationPage = require('../Pages/RegulationNotification');
 const RegulationItemPage = require('../Pages/RegulationItem');
 
@@ -13,7 +12,6 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
     let loginPage;
     let regulationNotificationPage;
     let regulationItemPage;
-    let sharedUtils;
 
     // נותנים לטסט 5 דקות לרוץ עקב הזנת נתונים מרובה
     test.setTimeout(1000000);
@@ -32,8 +30,6 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
 
         po = {};
         po.dataFolder = path.join(__dirname, '../Data');
-
-        sharedUtils = new SharedUtils(page, po, env, console);
 
         loginPage = new LoginPage(page, po, env, console);
         regulationNotificationPage = new RegulationNotificationPage(page, po, env, console);
@@ -54,6 +50,11 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
 
         // מריץ את יצירת הנוטיפיקציה בתהליך השפיות עם הפעלת ולידציות
         await regulationNotificationPage.CreateNotificationSanity(itemNameH, true);
+
+        // מוודא שהופיעה הודעת הצלחה וסוגר את הדיאלוג מהטסט
+        const text = await regulationNotificationPage.dialog.textContent();
+        expect(text).toContain('נוטיפיקציה נשמרה בהצלחה');
+        await regulationNotificationPage.okEnd.click();
     });
 
     test('יצירת נוטיפיקציה עם שמירת טיוטה אחרי כל שלב', async ({ page }) => {
@@ -67,5 +68,46 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
 
         // שלב 2: תהליך מילוי מרובה שלבים עם שמירת טיוטות ביניים
         await regulationNotificationPage.CreateNotificationWithDrafts(itemNameH, true);
+    });
+
+    test('יצירת נוטיפיקציה - בדיקת תווים מאופשרים ושמירה', async ({ page }) => {
+        test.setTimeout(3600000); // שעה — הטסט בודק כל תו בכל שדה
+        const uniqueId = Date.now().toString().slice(-4);
+        const itemNameH = `בדיקת תווים ${uniqueId}`;
+        const itemNameE = `Char Test ${uniqueId}`;
+
+        // שלב 1: מנכ"ל מוסיף פריט למאגר — כולל בדיקת תווים בשדות השם
+        await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 0);
+
+        // שלב 2: ממלא כל שדה בתווים שמאופשרים בפועל ושולח
+        await regulationNotificationPage.CreateNotificationCharTest(itemNameH);
+
+        // מוודא שהופיעה הודעת הצלחה וסוגר את הדיאלוג
+        try {
+            const text = await regulationNotificationPage.dialog.textContent();
+            expect(text).toContain('נוטיפיקציה נשמרה בהצלחה');
+            await regulationNotificationPage.okEnd.click();
+        } catch (err) {
+            await page.pause(); // עוצר ומחכה להמשך ידני
+            throw err;
+        }
+    });
+
+    test('יצירת נוטיפיקציה - בדיקת שליחה עם מקסימום תווים מורשים', async ({ page }) => {
+        // נייצר שם ייחודי כדי שנוכל למצוא אותו בקלות בטבלה
+        const uniqueId = Date.now().toString().slice(-4);
+        const itemNameH = `מקסימום תווים ${uniqueId}`;
+        const itemNameE = `Max Chars ${uniqueId}`;
+
+        // שלב 1: מנכ"ל מוסיף פריט למאגר
+        await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
+
+        // שלב 2: תהליך מילוי ומילוי מקסימום תווים המותרים
+        await regulationNotificationPage.CreateNotificationMaxValidData(itemNameH);
+
+        // מוודא שהופיעה הודעת הצלחה וסוגר את הדיאלוג מהטסט
+        const text = await regulationNotificationPage.dialog.textContent();
+        expect(text).toContain('נוטיפיקציה נשמרה בהצלחה');
+        await regulationNotificationPage.okEnd.click();
     });
 });

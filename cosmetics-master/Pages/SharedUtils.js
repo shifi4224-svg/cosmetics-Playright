@@ -131,6 +131,63 @@ class SharedUtils {
         }
     }
 
+    async CheckCharactersAndGetAllowed(locatorOrString, name) {
+        this.log.info(`בודק תווים לשדה: ${name} ומחזיר תווים מאופשרים בפועל...`);
+        const loc = (typeof locatorOrString === 'string'
+            ? this.page.locator(locatorOrString)
+            : locatorOrString).first();
+        const x = await this.CharactersFile();
+        let actuallyAllowed = '';
+
+        for (let i = 0; i < x.length; i++) {
+            await loc.clear();
+            await loc.fill(x[i]);
+            let actualValue = await loc.inputValue();
+            await this.page.keyboard.press('Tab');
+            await this.page.waitForTimeout(50);
+
+            if (await this.isVisibleSafe('mat-option', 100)) {
+                await this.page.keyboard.press('Escape');
+            }
+            await loc.click();
+
+            let isBlocked = false;
+            if (actualValue !== x[i]) {
+                isBlocked = true;
+            } else if (await this.isVisibleSafe('//span[contains(text(), "תו לא חוקי")]', 100)) {
+                isBlocked = true;
+            }
+
+            if (!isBlocked) {
+                actuallyAllowed += x[i];
+            }
+        }
+        await loc.clear();
+        this.log.info(`✅ שדה "${name}": תווים מאופשרים בפועל: "${actuallyAllowed}"`);
+        return actuallyAllowed;
+    }
+
+    async CheckNewlineAllowed(locatorOrString, name) {
+        this.log.info(`בודק ירידת שורה לשדה: ${name}...`);
+        const loc = (typeof locatorOrString === 'string'
+            ? this.page.locator(locatorOrString)
+            : locatorOrString).first();
+
+        await loc.clear();
+        await loc.fill('שורה1\nשורה2');
+        const actualValue = await loc.inputValue();
+        await this.page.keyboard.press('Tab');
+        await this.page.waitForTimeout(500);
+        await loc.click();
+
+        const hasNewline = actualValue.includes('\n');
+        this.log.info(hasNewline
+            ? `✅ שדה "${name}": ירידת שורה מאופשרת`
+            : `ℹ️ שדה "${name}": ירידת שורה חסומה`);
+        await loc.clear();
+        return hasNewline;
+    }
+
     async CheckMaxLength(locatorOrString, max, name) {
         this.log.info(`בודק אורך מקסימלי (${max}) לשדה: ${name}...`);
         const loc = (typeof locatorOrString === 'string'
@@ -403,12 +460,11 @@ class SharedUtils {
             bussines = b;
         }
         code = `//span[text() ="${bussines}"]`;
-        await this.page.waitForTimeout(1000);
 
         this.log.info(`פותח עמוד מנכל של עסק ${bussines}`);
         await this.page.locator('//*[contains(text(), "מנכל")]').click();
-        
-        if (await this.isVisibleSafe('//div[@role="dialog"]', 2000)) {
+
+        if (await this.isVisibleSafe('//div[@role="dialog"]', 1000)) {
             await this.page.locator('//button[@class="main-button narrow"]').click();
         }
         await this.page.waitForTimeout(500);
