@@ -145,7 +145,7 @@ class ProperNotificationPage {
         this.other = this.page.locator('//img[@alt="אחר"]');
         this.otherCheckbox = this.page.locator('//input[@aria-label="אחר"]');
         this.otherMarketingClaim = this.page.locator('//input[@aria-label="טענה שיווקית אחרת"]');
-        this.targetPopulation = this.page.locator('//span[@ng-reflect-moh-translation="populationTitle"]');
+        this.targetPopulation = this.page.locator('//span[text()="אוכלוסיות יעד *"]');
         this.adultsAbove18 = this.page.locator('//input[@aria-label="מבוגרים מעל גיל 18"]');
         this.womenAbove18 = this.page.locator('//input[@aria-label="נשים מעל גיל 18"]');
         this.menAbove18 = this.page.locator('//input[@type="checkbox" and @aria-label="גברים מעל גיל 18"]');
@@ -286,8 +286,6 @@ class ProperNotificationPage {
             await this.adultsAbove12.click();
             await this.womenAbove12.click();
             await this.menAbove12.click();
-            await this.professionalUse.click();
-            await this.adultsAbove18.click();
         } catch (err) {
             this.log.error(err.message);
         }
@@ -409,8 +407,9 @@ class ProperNotificationPage {
         const transportAllowed  = await this.sharedUtils.CheckCharactersAndGetAllowed(this.transportationAndStorage, "הוראות הובלה ואחסנה");
         await this.transportationAndStorage.fill(transportAllowed || "A");
 
-        const storageAllowed    = await this.sharedUtils.CheckCharactersAndGetAllowed(this.storageLocation,        "מקום אחסון");
-        await this.storageLocation.fill(storageAllowed || "A");
+        // מקום אחסון — רשימת בחירה, בוחרים אפשרות ראשונה
+        await this.storageLocation.click();
+        await this.page.locator('mat-option').first().click();
         await this.option.first().click();
 
         await this.nextStep.click();
@@ -519,7 +518,7 @@ class ProperNotificationPage {
         
         await this.transportationAndStorage.fill(v[15]);
         await this.storageLocation.click();
-        await this.storageLocation.fill(v[16]);
+        await this.page.locator('mat-option').first().click();
         
         await this.option.first().click();
         await this.nextStep.click();
