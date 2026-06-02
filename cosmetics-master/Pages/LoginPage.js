@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 class LoginPage {
     constructor(page, po, env, log) {
         this.page = page;
@@ -23,12 +25,13 @@ class LoginPage {
     }
 
     async LoginDev() {
-        await this.page.goto('https://cnpdev.health.gov.il/');
-        await this.page.locator(this.tZ).fill("322638727");
-        await this.page.locator(this.sL).fill("2000");
+        await this.page.goto(process.env.BASE_URL || this.env.url);
+        await this.page.locator(this.tZ).fill(process.env.USER_ID || this.env.user);
+        await this.page.locator(this.sL).fill(process.env.USER_BIRTH_YEAR || this.env.password);
         await this.page.locator(this.bb).click();
-        if (!await this.card.isVisible()) {
-            await this.page.pause(5000);
+        await this.page.waitForTimeout(1000);
+        if (await this.page.locator('//*[contains(text(), "קוד אימות")]').isVisible()) {
+            await this.page.pause();
         }
         await this.card.waitFor({ state: 'visible' });
         await this.page.waitForTimeout(5000);

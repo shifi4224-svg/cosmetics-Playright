@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 
@@ -21,12 +22,12 @@ test.describe('רישום עוסק בתמרוק', () => {
     test.beforeEach(async ({ page }) => {
         // 1. הגדרת משתני הסביבה (env) - אפשר בעתיד לייבא מקובץ חיצוני
         env = {
-            url: 'https://cnpdev.health.gov.il',
-            user: '322638727',
-            password: '2000',
-            telefon: '0501234567',
-            email: 'test@test.com',
-            houseNumber: '5',
+            url: process.env.BASE_URL || 'https://cnpdev.health.gov.il',
+            user: process.env.USER_ID || '322638727',
+            password: process.env.USER_BIRTH_YEAR || '2000',
+            telefon: process.env.TELEFON || '0501234567',
+            email: process.env.EMAIL || 'test@test.com',
+            houseNumber: process.env.HOUSE_NUMBER || '5',
             charEmail: '',
             charBusinessName: '&"\'W-\,ף.ץת_ 43 ()dדA',
             charBusinessId: '34',

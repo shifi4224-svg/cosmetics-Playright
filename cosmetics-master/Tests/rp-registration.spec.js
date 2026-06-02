@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 
@@ -19,14 +20,14 @@ test.describe('רישום תאגיד נציג אחראי', () => {
     // רץ לפני כל טסט בסוויטה ומכין את הסביבה
     test.beforeEach(async ({ page }) => {
         env = {
-            url: 'https://cnpdev.health.gov.il',
-            user: '322638727',
-            password: '2000',
+            url: process.env.BASE_URL || 'https://cnpdev.health.gov.il',
+            user: process.env.USER_ID || '322638727',
+            password: process.env.USER_BIRTH_YEAR || '2000',
             charBusinessName: 'אבגדהוזחטיכלמנסעפצקרשת',
             charBusinessId: '0123456789',
-            telefon: '0504444444',
-            email: 'test@moh.gov.il',
-            houseNumber: '89',
+            telefon: process.env.TELEFON || '0504444444',
+            email: process.env.EMAIL || 'test@moh.gov.il',
+            houseNumber: process.env.HOUSE_NUMBER || '89',
             charEmail: '%_-.+W43dA',
             charAddressNotes: '()"W-,ף.ץת43dדA',
             charOtherAddress: '\/()-\'".,AWdתץדף43'
@@ -91,14 +92,14 @@ test.describe('רישום נציג אחראי (3 סוגים)', () => {
     // רץ לפני כל טסט בסוויטה ומכין את הסביבה
     test.beforeEach(async ({ page }) => {
         env = {
-            url: 'https://cnpdev.health.gov.il',
-            user: '322638727',
-            password: '2000',
+            url: process.env.BASE_URL || 'https://cnpdev.health.gov.il',
+            user: process.env.USER_ID || '322638727',
+            password: process.env.USER_BIRTH_YEAR || '2000',
             charBusinessName: 'אבגדהוזחטיכלמנסעפצקרשת',
             charBusinessId: '0123456789',
-            telefon: '0504444444',
-            email: 'test@moh.gov.il',
-            houseNumber: '89',
+            telefon: process.env.TELEFON || '0504444444',
+            email: process.env.EMAIL || 'test@moh.gov.il',
+            houseNumber: process.env.HOUSE_NUMBER || '89',
             charEmail: '%_-.+W43dA',
             charAddressNotes: '()"W-,ף.ץת43dדA',
             charOtherAddress: '\/()-\'".,AWdתץדף43'

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 
@@ -19,9 +20,9 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
     // מכין את הסביבה לפני כל טסט
     test.beforeEach(async ({ page }) => {
         env = {
-            url: 'https://cnpdev.health.gov.il',
-            user: '322638727',
-            password: '2000',
+            url: process.env.BASE_URL || 'https://cnpdev.health.gov.il',
+            user: process.env.USER_ID || '322638727',
+            password: process.env.USER_BIRTH_YEAR || '2000',
             charNotification: 'W-,ף.ץת43dדA',
             charManufactor: '&"\'W-,ף.ץת_ 43 ()dדA',
             charBusinessId: '0123456789',

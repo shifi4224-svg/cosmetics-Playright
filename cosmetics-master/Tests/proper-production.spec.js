@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 
@@ -19,9 +20,9 @@ test.describe('בדיקות תנאי ייצור נאותים', () => {
 
     test.beforeEach(async ({ page }) => {
         env = {
-            url: 'https://cnpdev.health.gov.il',
-            user: '322638727',
-            password: '2000'
+            url: process.env.BASE_URL || 'https://cnpdev.health.gov.il',
+            user: process.env.USER_ID || '322638727',
+            password: process.env.USER_BIRTH_YEAR || '2000'
         };
 
         po = {};
