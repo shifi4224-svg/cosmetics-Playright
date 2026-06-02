@@ -82,6 +82,21 @@ test.describe('רישום תאגיד נציג אחראי', () => {
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
     });
+
+    test('הקמת תאגיד נציג אחראי - בדיקת תווים מאופשרים ושמירה', async ({ page }) => {
+        test.setTimeout(3600000);
+        await regulationTaagidRP.LoginToDeakerCharTest("בדיקת תווים");
+
+        try {
+            await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
+            const text = await dealerPage.dialog.textContent();
+            expect(text).toContain('בהצלחה');
+            await dealerPage.okEnd.click();
+        } catch (err) {
+            await page.pause();
+            throw err;
+        }
+    });
 });
 test.describe('רישום נציג אחראי (3 סוגים)', () => {
     let po;
@@ -158,12 +173,26 @@ test.describe('רישום נציג אחראי (3 סוגים)', () => {
         await dealerPage.okEnd.click();
     });
     test('רישום נציג אחראי בודד עם תוים מיוחדים', async ({ page }) => {
-        // מריץ את מתודת הרישום לנציג אחראי בודד
         await regulationRPPage.RegulationToRP(" - בודד");
         await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
         const text = await dealerPage.dialog.textContent();
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
+    });
+
+    test('רישום נציג אחראי בודד - בדיקת תווים מאופשרים ושמירה', async ({ page }) => {
+        test.setTimeout(3600000);
+        await regulationRPPage.RegulationToRPCharTest("בדיקת תווים");
+
+        try {
+            await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
+            const text = await dealerPage.dialog.textContent();
+            expect(text).toContain('בהצלחה');
+            await dealerPage.okEnd.click();
+        } catch (err) {
+            await page.pause();
+            throw err;
+        }
     });
     test('בדיקת מקטע פרטי התקשרות', async ({ page }) => {
         // מריץ את מתודת הבדיקה

@@ -61,6 +61,66 @@ class RegulationTaagidRPPage {
         }
     }
 
+    async LoginToDeakerCharTest(name = "") {
+        this.log.info("רישום תאגיד נציג אחראי - בדיקת תווים מאופשרים");
+        const t = await this.regulationDealer.ReadIdName("", name || "בדיקת תווים");
+
+        await this.orderButton.click();
+        await this.tagidRP2.waitFor({ state: 'visible' });
+        await this.tagidRP2.click();
+
+        // שם התאגיד — בדיקת תווים + מילוי שם בסיס + תווים מאופשרים
+        const businessNameAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.businessName, "שם התאגיד");
+        await this.businessName.fill(t[1] + (businessNameAllowed || ""));
+
+        // ח.פ. — בדיקת תווים בלבד, מכניסים מספר תקין
+        await this.sharedUtils.CheckCharactersAndGetAllowed(this.businessId, "ח.פ.");
+        await this.businessId.fill(t[0]);
+
+        await this.page.waitForTimeout(2000);
+        await this.nextStep.click();
+
+        // כתובת — טלפון ומייל בערכים תקינים, הערות וסוג כתובת בתווים מאופשרים
+        await this.address.telefon.first().fill(this.env.telefon);
+        await this.address.email.first().fill(this.env.email);
+
+        try {
+            await this.address.city.first().fill("שחר");
+            await this.address.nameCity.first().waitFor({ state: 'visible', timeout: 5000 });
+            await this.address.nameCity.first().click();
+            await this.address.street.first().fill("הבציר");
+            await this.address.nameStreet.first().waitFor({ state: 'visible', timeout: 5000 });
+            await this.address.nameStreet.first().click();
+        } catch (err) {
+            this.log.error('תקלה בבחירת עיר/רחוב', err);
+            throw err;
+        }
+
+        await this.address.houseNumber.first().fill(this.env.houseNumber);
+
+        const addrNotesAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.address.addressNotes, "הערות לכתובת");
+        await this.address.addressNotes.first().fill(addrNotesAllowed || "א");
+
+        await this.address.addressType.first().click();
+        await this.address.otherAddress.first().waitFor({ state: 'visible' });
+        await this.address.otherAddress.first().click();
+
+        const otherAddrAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.address.otherAddressType, "סוג כתובת אחר");
+        await this.address.otherAddressType.first().fill(otherAddrAllowed || "א");
+
+        await this.saveSubmit.click();
+        await this.page.waitForTimeout(3000);
+
+        if (await this.regulationDealer.dialog.isVisible()) {
+            const dialogText = await this.regulationDealer.dialog.textContent();
+            this.log.info(dialogText);
+            if (dialogText.includes("בהצלחה")) {
+                const oldfilepath2 = this.po.dataFolder + '\\RP2.txt';
+                await this.sharedUtils.WriteFile(oldfilepath2, t[1]);
+            }
+        }
+    }
+
     async LoginToDeakerNoMancal(name = "", idd = "") {
         try {
             console.log("רישום תאגיד נציג אחראי - לא מנכ\"ל");

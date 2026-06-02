@@ -134,6 +134,37 @@ class RegulationRPPage {
         await this.Save(f);
     }
 
+    async RegulationToRPCharTest(name = "") {
+        this.log.info("רישום נציג אחראי בודד - בדיקת תווים מאופשרים");
+        const oldfilepath = this.po.dataFolder + '\\linked.txt';
+        const t = await this.sharedUtils.ReadFileUpdate(oldfilepath);
+
+        await this.orderButton.click();
+        if (await this.isVisibleSafe(this.dialog, 2000)) {
+            await this.okEnd.click();
+            await this.orderButton.click();
+        }
+        await this.rpIshKesher3.click();
+        await this.noBusiness.click();
+
+        // שם העסק — בדיקת תווים + מילוי
+        const businessNameAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.business, "שם העסק");
+        await this.business.fill((t[1] + t[2] + name + (businessNameAllowed || "")).substring(0, 100));
+
+        // מספר מזהה — בדיקת תווים בלבד, מכניסים מספר תקין
+        await this.sharedUtils.CheckCharactersAndGetAllowed(this.businessId, "מספר מזהה");
+        await this.businessId.fill(t[0]);
+
+        // כתובת
+        await this.address.telefon.first().fill(this.env.telefon);
+        await this.address.email.first().fill(this.env.email);
+        await this.address.publicTelefon.first().fill(this.env.telefon);
+        await this.address.publicEmail.first().fill(this.env.email);
+
+        const f = await this.files.AtachFile();
+        await this.Save(f);
+    }
+
     async AllFiles() {
         const filesToTest = [
             { name: 'תמונה תקינה (png)', path: 'image.png' },
