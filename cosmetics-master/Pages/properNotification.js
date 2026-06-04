@@ -217,58 +217,58 @@ class ProperNotificationPage {
             await this.alDama.click();
             await this.sensitiveSkin.click();
             await this.dermatologicalltTested.click();
-            await this.jellyfishSting.click();
-            await this.hypoallergenic.click();
-            await this.sensitiveEyes.click();
-            await this.clinicallyTested.click();
-            await this.contactLensFriendly.click();
-            await this.ophthalmologicallyTested.click();
-            await this.nonComedogenic.click();
-            await this.uvProtection.click();
-            await this.broadSpectrum.click();
-            await this.uvaProtection.click();
-            await this.irProtection.click();
-            await this.waterProof.click();
-            await this.containsSPF.click();
-            await this.veryWaterProof.click();
-            await this.containsBlueLight.click();
-            await this.oralHygiene.click();
-            await this.oralHygieneAndFreshness.click();
-            await this.preventsBadBreath.click();
-            await this.teethWhitening.click();
-            await this.fluorideFree.click();
-            await this.antibacterial.click();
-            await this.generalClaims.click();
-            await this.organic.click();
-            await this.vegan.click();
-            await this.noAllergens.click();
-            await this.flushableWipes.click();
-            await this.marineLifeFriendly.click();
-            await this.natural.click();
-            await this.noParabens.click();
-            await this.diabeticFriendly.click();
-            await this.antiperspirant.click();
-            await this.crueltyFree.click();
-            await this.odorPrevention.click();
-            await this.improvesSkinAppearance.click();
-            await this.antiCellulite.click();
-            await this.antiAging.click();
-            await this.skinBrightening.click();
-            await this.preventsChafing.click();
-            await this.hairProduct.click();
-            await this.antiDandruff.click();
-            await this.scalpHygiene.click();
-            await this.preventsHairLoss.click();
-            await this.hairStrengthening.click();
-            await this.skin.click();
-            await this.handHygiene.click();
-            await this.other.click();
-            await this.otherCheckbox.click();
+            // await this.jellyfishSting.click();
+            // await this.hypoallergenic.click();
+            // await this.sensitiveEyes.click();
+            // await this.clinicallyTested.click();
+            // await this.contactLensFriendly.click();
+            // await this.ophthalmologicallyTested.click();
+            // await this.nonComedogenic.click();
+            // await this.uvProtection.click();
+            // await this.broadSpectrum.click();
+            // await this.uvaProtection.click();
+            // await this.irProtection.click();
+            // await this.waterProof.click();
+            // await this.containsSPF.click();
+            // await this.veryWaterProof.click();
+            // await this.containsBlueLight.click();
+            // await this.oralHygiene.click();
+            // await this.oralHygieneAndFreshness.click();
+            // await this.preventsBadBreath.click();
+            // await this.teethWhitening.click();
+            // await this.fluorideFree.click();
+            // await this.antibacterial.click();
+            // await this.generalClaims.click();
+            // await this.organic.click();
+            // await this.vegan.click();
+            // await this.noAllergens.click();
+            // await this.flushableWipes.click();
+            // await this.marineLifeFriendly.click();
+            // await this.natural.click();
+            // await this.noParabens.click();
+            // await this.diabeticFriendly.click();
+            // await this.antiperspirant.click();
+            // await this.crueltyFree.click();
+            // await this.odorPrevention.click();
+            // await this.improvesSkinAppearance.click();
+            // await this.antiCellulite.click();
+            // await this.antiAging.click();
+            // await this.skinBrightening.click();
+            // await this.preventsChafing.click();
+            // await this.hairProduct.click();
+            // await this.antiDandruff.click();
+            // await this.scalpHygiene.click();
+            // await this.preventsHairLoss.click();
+            // await this.hairStrengthening.click();
+            // await this.skin.click();
+            // await this.handHygiene.click();
+            // await this.other.click();
+            // await this.otherCheckbox.click();
             if (flug) {
                 await this.sharedUtils.CheckCharacters(this.otherMarketingClaim, "טענה שיווקית אחרת", this.env.charNotification);
                 await this.sharedUtils.CheckMaxLength(this.otherMarketingClaim, 50, "טענה שיווקית אחרת");
             }
-            await this.otherMarketingClaim.fill("טענה שיווקית אחרת אוטומציה");
+            // await this.otherMarketingClaim.fill("טענה שיווקית אחרת אוטומציה");
         } catch (err) {
             this.log.error(err.message);
         }
@@ -291,8 +291,150 @@ class ProperNotificationPage {
         }
     }
 
-    async CreateProperNotificationCharTest(itemName = "") {
-        this.log.info("מתחיל יצירת נוטיפיקציה נאותה - בדיקת תווים מאופשרים");
+    async ReopenDraftAndNavigate(itemName, stepsToSkip) {
+        const rows = this.page.locator("//mat-row");
+        await rows.first().waitFor({ state: 'visible', timeout: 10000 });
+        const total = await rows.count();
+        let found = false;
+        for (let i = 0; i < total; i++) {
+            const text = await rows.nth(i).textContent();
+            if (text.includes(itemName)) {
+                await rows.nth(i).click();
+                if (await this.sharedUtils.isVisibleSafe('//button[@class="primary-btn"]', 2000)) {
+                    await this.page.locator('//button[@class="primary-btn"]').click();
+                } else if (await this.sharedUtils.isVisibleSafe('//button[@class="more-btn ng-star-inserted"]', 2000)) {
+                    await this.page.locator('//button[@class="more-btn ng-star-inserted"]').click();
+                    await this.page.locator('//span[text()="עריכת טיוטה"]').click();
+                }
+                found = true;
+                break;
+            }
+        }
+        if (!found) throw new Error(`לא נמצא פריט בשם "${itemName}" בטבלה`);
+        for (let i = 0; i < stepsToSkip; i++) {
+            await this.nextStep.waitFor({ state: 'visible' });
+            await this.nextStep.click();
+            await this.page.waitForTimeout(500);
+        }
+    }
+
+    async CreateProperNotificationWithDrafts(itemName = "") {
+        this.log.info("מתחיל יצירת נוטיפיקציה נאותה - שמירת טיוטה בכל שלב");
+        const v = await this.sharedUtils.ReadFileComment(require('path').join(this.po.dataFolder, "proper.txt"));
+        const RegulationItemPage = require('./RegulationItem');
+        const regulationItemPage = new RegulationItemPage(this.page, this.po, this.env, this.log);
+
+        // --- טיוטה 1: יצרן התמרוק ---
+        this.log.info("טיוטה 1 — יצרן התמרוק");
+        await regulationItemPage.OpenItem1("", "", itemName, "פריט נאות", 'לאישור נציג אחראי', "approve", true);
+
+        await this.ManufacturAddressProper([v[0], v[1], v[2], v[3], v[4], v[5]], false);
+        await this.noFirstQuestion.click();
+        await this.noSecondQuestion.click();
+        await this.noThirdQuestion.click();
+        await this.noFourthQuestion.click();
+        await this.languageReferenceCountry.fill(v[6]);
+
+        await this.saveDraft.click();
+        await this.page.locator('//*[@role="dialog"]').waitFor({ state: 'visible' });
+        const d1 = await this.page.locator('//*[@role="dialog"]').textContent();
+        if (!d1.includes("נשמרה בהצלחה")) throw new Error(`טיוטה 1 נכשלה: ${d1}`);
+        this.log.info("✅ טיוטה 1 נשמרה");
+        await this.page.locator('//button[@class="main-button narrow"]').click();
+
+        // --- טיוטה 2: פרטי התמרוק ---
+        this.log.info("טיוטה 2 — פרטי התמרוק");
+        await this.ReopenDraftAndNavigate(itemName, 1);
+
+        await this.cosmeticCategory1.click();
+        await this.category1Skin.waitFor({ state: 'visible' });
+        await this.category1Skin.click();
+        await this.cosmeticCategory2.click();
+        await this.category2Makeup.waitFor({ state: 'visible' });
+        await this.category2Makeup.click();
+        await this.cosmeticCategory3.click();
+        await this.category3Other.waitFor({ state: 'visible' });
+        await this.category3Other.click();
+        await this.otherCosmeticCategory3.fill(v[7]);
+
+        await this.numberOfPhases.click();
+        await this.phases2.click();
+        await this.physicochemicalProperties.click();
+        await this.creamProperty.click();
+
+        if (this.po && this.po.regulationNotification) {
+            await this.po.regulationNotification.Files(false);
+            await this.po.regulationNotification.QuantityAndPackaging([v[10]], false);
+        }
+
+        await this.instructions.fill(v[12]);
+        await this.pao.click();
+        await this.numberOfMonths.fill(v[13]);
+        await this.frequencyOfUse.click();
+        await this.twiceADay.click();
+
+        if (this.po && this.po.regulationNotification) {
+            await this.po.regulationNotification.AddShades(v[14], false, 0);
+        }
+
+        await this.transportationAndStorage.fill(v[15]);
+        await this.storageLocation.click();
+        await this.page.locator('mat-option').first().click();
+
+        await this.saveDraft.click();
+        await this.page.locator('//*[@role="dialog"]').waitFor({ state: 'visible' });
+        const d2 = await this.page.locator('//*[@role="dialog"]').textContent();
+        if (!d2.includes("נשמרה בהצלחה")) throw new Error(`טיוטה 2 נכשלה: ${d2}`);
+        this.log.info("✅ טיוטה 2 נשמרה");
+        await this.page.locator('//button[@class="main-button narrow"]').click();
+
+        // --- טיוטה 3: אוכלוסיות יעד ---
+        this.log.info("טיוטה 3 — אוכלוסיות יעד");
+        await this.ReopenDraftAndNavigate(itemName, 2);
+
+        await this.ClinicalTest(false);
+        await this.TargetPopulation();
+        await this.distributionDetails.click();
+        await this.distributionStatus.click();
+        await this.commercialReasons.click();
+        await this.discontinuedDate.click();
+        await this.pickDate.click();
+        await this.cessationReason.click();
+        await this.otherCessationReason.click();
+        await this.otherReasonText.fill(v[17]);
+        await this.page.waitForTimeout(2000);
+
+        await this.saveDraft.click();
+        await this.page.locator('//*[@role="dialog"]').waitFor({ state: 'visible' });
+        const d3 = await this.page.locator('//*[@role="dialog"]').textContent();
+        if (!d3.includes("נשמרה בהצלחה")) throw new Error(`טיוטה 3 נכשלה: ${d3}`);
+        this.log.info("✅ טיוטה 3 נשמרה");
+        await this.page.locator('//button[@class="main-button narrow"]').click();
+
+        // --- שמירה סופית: הצהרה ---
+        this.log.info("טיוטה 4 — הצהרה ושמירה סופית");
+        await this.ReopenDraftAndNavigate(itemName, 3);
+
+        await this.files.AtachFile();
+        await this.saveAndSend.click();
+
+        const dialog = this.po?.regulationNotification?.dialog || this.page.locator('//*[@role="dialog"]');
+        await dialog.waitFor({ state: 'visible' });
+        const finalText = await dialog.textContent();
+        this.log.info(finalText);
+        await this.page.locator('//button[@class="main-button narrow"]').click();
+        return finalText;
+    }
+
+    GenerateMaxCharString(allowedChars, maxLength) {
+        if (!allowedChars) return 'A'.repeat(maxLength);
+        let result = '';
+        while (result.length < maxLength) result += allowedChars;
+        return result.substring(0, maxLength);
+    }
+
+    async CreateProperNotificationCharAndMaxTest(itemName = "") {
+        this.log.info("מתחיל יצירת נוטיפיקציה נאותה - בדיקת תווים + מקסימום תווים בכל שדה");
 
         const RegulationItemPage = require('./RegulationItem');
         const regulationItemPage = new RegulationItemPage(this.page, this.po, this.env, this.log);
@@ -304,37 +446,42 @@ class ProperNotificationPage {
         await this.importingCountry.click();
         await this.importingCyprus.click();
 
-        const manufNameAllowed  = await this.sharedUtils.CheckCharactersAndGetAllowed(this.manufacturerName,        "שם יצרן");
-        await this.manufacturerName.fill(manufNameAllowed || "A");
+        const manufAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.manufacturerName, "שם יצרן");
+        await this.sharedUtils.CheckMaxLength(this.manufacturerName, 50, "שם יצרן");
+        await this.manufacturerName.fill(this.GenerateMaxCharString(manufAllowed, 50));
 
         await this.addressType.click();
         await this.manufacturingType.click();
         await this.country.click();
         await this.countryCyprus.click();
 
-        const cityAllowed       = await this.sharedUtils.CheckCharactersAndGetAllowed(this.city,                   "עיר/יישוב");
-        await this.city.fill(cityAllowed || "A");
+        const cityAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.city, "עיר/יישוב");
+        await this.sharedUtils.CheckMaxLength(this.city, 50, "עיר/יישוב");
+        await this.city.fill(this.GenerateMaxCharString(cityAllowed, 50));
 
-        const streetAllowed     = await this.sharedUtils.CheckCharactersAndGetAllowed(this.street,                 "רחוב");
-        await this.street.fill(streetAllowed || "A");
+        const streetAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.street, "רחוב");
+        await this.sharedUtils.CheckMaxLength(this.street, 50, "רחוב");
+        await this.street.fill(this.GenerateMaxCharString(streetAllowed, 50));
 
-        const buildingAllowed   = await this.sharedUtils.CheckCharactersAndGetAllowed(this.buildingNumber,         "מספר בית");
-        await this.buildingNumber.fill(buildingAllowed || "1");
+        const buildingAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.buildingNumber, "מספר בית");
+        await this.sharedUtils.CheckMaxLength(this.buildingNumber, 50, "מספר בית");
+        await this.buildingNumber.fill(this.GenerateMaxCharString(buildingAllowed, 50));
 
-        const zipAllowed        = await this.sharedUtils.CheckCharactersAndGetAllowed(this.zipCode,                "מיקוד");
-        await this.zipCode.fill(zipAllowed || "1");
+        const zipAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.zipCode, "מיקוד");
+        await this.sharedUtils.CheckMaxLength(this.zipCode, 50, "מיקוד");
+        await this.zipCode.fill(this.GenerateMaxCharString(zipAllowed, 50));
 
-        const addrNotesAllowed  = await this.sharedUtils.CheckCharactersAndGetAllowed(this.addressNotes,           "הערות לכתובת");
-        await this.addressNotes.fill(addrNotesAllowed || "A");
+        const addrNotesAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.addressNotes, "הערות לכתובת");
+        await this.sharedUtils.CheckMaxLength(this.addressNotes, 50, "הערות לכתובת");
+        await this.addressNotes.fill(this.GenerateMaxCharString(addrNotesAllowed, 50));
 
         await this.noFirstQuestion.click();
         await this.noSecondQuestion.click();
         await this.noThirdQuestion.click();
         await this.noFourthQuestion.click();
 
-        const langAllowed       = await this.sharedUtils.CheckCharactersAndGetAllowed(this.languageReferenceCountry, "שם תמרוק בשפת מדינת הסתמכות");
-        // בדיקת תווים ממספר שפות: צרפתית(é), ספרדית(ñ), גרמנית(ü), איטלקית(à), פורטוגזית(ã), שוויצרית(ö),
-        //                          יוונית(α), ערבית(ع), יפנית(あ), סינית(中), רוסית(я), קוריאנית(한)
+        // שם תמרוק בשפת מדינת הסתמכות — תווים רגילים + תווים רב-לשוניים
+        const langAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.languageReferenceCountry, "שם תמרוק בשפת מדינת הסתמכות");
         const multiLangChars = 'éñüàãöαعあ中я한';
         const multiLangAllowed = [];
         for (const ch of multiLangChars) {
@@ -344,23 +491,13 @@ class ProperNotificationPage {
             await this.page.keyboard.press('Tab');
             await this.page.waitForTimeout(50);
             await this.languageReferenceCountry.click();
-
-            let isBlocked = false;
-            if (val !== ch) {
-                isBlocked = true;
-            } else if (await this.sharedUtils.isVisibleSafe('//span[contains(text(), "תו לא חוקי")]', 100)) {
-                isBlocked = true;
-            }
-
-            if (!isBlocked) {
-                multiLangAllowed.push(ch);
-                this.log.info(`✅ תו "${ch}" מאופשר בשדה שם תמרוק בשפת מדינת הסתמכות`);
-            } else {
-                this.log.info(`ℹ️ תו "${ch}" חסום בשדה שם תמרוק בשפת מדינת הסתמכות`);
-            }
+            let isBlocked = val !== ch || await this.sharedUtils.isVisibleSafe('//span[contains(text(), "תו לא חוקי")]', 100);
+            if (!isBlocked) { multiLangAllowed.push(ch); this.log.info(`✅ "${ch}" מאופשר`); }
+            else { this.log.info(`ℹ️ "${ch}" חסום`); }
         }
+        const langCombined = (langAllowed || "A") + multiLangAllowed.join('');
         await this.languageReferenceCountry.clear();
-        await this.languageReferenceCountry.fill((langAllowed || "A") + multiLangAllowed.join(''));
+        await this.languageReferenceCountry.fill(langCombined.substring(0, 200));
 
         await this.nextStep.click();
 
@@ -368,17 +505,16 @@ class ProperNotificationPage {
         await this.cosmeticCategory1.click();
         await this.category1Skin.waitFor({ state: 'visible' });
         await this.category1Skin.click();
-
         await this.cosmeticCategory2.click();
         await this.category2Makeup.waitFor({ state: 'visible' });
         await this.category2Makeup.click();
-
         await this.cosmeticCategory3.click();
         await this.category3Other.waitFor({ state: 'visible' });
         await this.category3Other.click();
 
-        const cat3Allowed       = await this.sharedUtils.CheckCharactersAndGetAllowed(this.otherCosmeticCategory3, "קטגוריה 3 אחר");
-        await this.otherCosmeticCategory3.fill(cat3Allowed || "A");
+        const cat3Allowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.otherCosmeticCategory3, "קטגוריה 3 אחר");
+        await this.sharedUtils.CheckMaxLength(this.otherCosmeticCategory3, 50, "קטגוריה 3 אחר");
+        await this.otherCosmeticCategory3.fill(this.GenerateMaxCharString(cat3Allowed, 50));
 
         await this.numberOfPhases.click();
         await this.phases2.click();
@@ -390,10 +526,12 @@ class ProperNotificationPage {
             await this.po.regulationNotification.QuantityAndPackaging(["10"], false);
         }
 
-        // הוראות שימוש - textarea, בודקים גם ירידת שורה
-        const instrAllowed      = await this.sharedUtils.CheckCharactersAndGetAllowed(this.instructions,           "הוראות שימוש");
-        const instrNewline      = await this.sharedUtils.CheckNewlineAllowed(this.instructions,                    "הוראות שימוש");
-        await this.instructions.fill(instrNewline ? (instrAllowed || "A") + "\n" + (instrAllowed || "A") : (instrAllowed || "A"));
+        // הוראות שימוש — textarea: תווים + ירידת שורה + מקסימום
+        const instrAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.instructions, "הוראות שימוש");
+        const instrNewline = await this.sharedUtils.CheckNewlineAllowed(this.instructions, "הוראות שימוש");
+        await this.sharedUtils.CheckMaxLength(this.instructions, 4000, "הוראות שימוש");
+        const instrBase = this.GenerateMaxCharString(instrAllowed, instrNewline ? 1999 : 4000);
+        await this.instructions.fill(instrNewline ? instrBase + "\n" + instrBase : instrBase);
 
         await this.pao.click();
         await this.numberOfMonths.fill("12");
@@ -404,21 +542,22 @@ class ProperNotificationPage {
             await this.po.regulationNotification.AddShades("A", false, 0);
         }
 
-        const transportAllowed  = await this.sharedUtils.CheckCharactersAndGetAllowed(this.transportationAndStorage, "הוראות הובלה ואחסנה");
-        await this.transportationAndStorage.fill(transportAllowed || "A");
+        const transportAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.transportationAndStorage, "הוראות הובלה ואחסנה");
+        await this.sharedUtils.CheckMaxLength(this.transportationAndStorage, 50, "הוראות הובלה ואחסנה");
+        await this.transportationAndStorage.fill(this.GenerateMaxCharString(transportAllowed, 50));
 
-        // מקום אחסון — רשימת בחירה, בוחרים אפשרות ראשונה
         await this.storageLocation.click();
+        await this.page.locator('mat-option').first().waitFor({ state: 'visible', timeout: 5000 });
         await this.page.locator('mat-option').first().click();
-        await this.option.first().click();
 
         await this.nextStep.click();
 
         // --- שלב 3: טענות שיווקיות + אוכלוסיות + הפצה ---
         await this.other.click();
         await this.otherCheckbox.click();
-        const otherClaimAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.otherMarketingClaim,    "טענה שיווקית אחרת");
-        await this.otherMarketingClaim.fill(otherClaimAllowed || "A");
+        const otherClaimAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.otherMarketingClaim, "טענה שיווקית אחרת");
+        await this.sharedUtils.CheckMaxLength(this.otherMarketingClaim, 50, "טענה שיווקית אחרת");
+        await this.otherMarketingClaim.fill(this.GenerateMaxCharString(otherClaimAllowed, 50));
 
         await this.TargetPopulation();
 
@@ -430,10 +569,12 @@ class ProperNotificationPage {
         await this.cessationReason.click();
         await this.otherCessationReason.click();
 
-        // סיבת הפסקה - textarea, בודקים גם ירידת שורה
-        const reasonAllowed     = await this.sharedUtils.CheckCharactersAndGetAllowed(this.otherReasonText,        "סיבת הפסקה אחר");
-        const reasonNewline     = await this.sharedUtils.CheckNewlineAllowed(this.otherReasonText,                 "סיבת הפסקה אחר");
-        await this.otherReasonText.fill(reasonNewline ? (reasonAllowed || "A") + "\n" + (reasonAllowed || "A") : (reasonAllowed || "A"));
+        // סיבת הפסקה — textarea: תווים + ירידת שורה + מקסימום
+        const reasonAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.otherReasonText, "סיבת הפסקה אחר");
+        const reasonNewline = await this.sharedUtils.CheckNewlineAllowed(this.otherReasonText, "סיבת הפסקה אחר");
+        await this.sharedUtils.CheckMaxLength(this.otherReasonText, 1000, "סיבת הפסקה אחר");
+        const reasonBase = this.GenerateMaxCharString(reasonAllowed, reasonNewline ? 499 : 1000);
+        await this.otherReasonText.fill(reasonNewline ? reasonBase + "\n" + reasonBase : reasonBase);
 
         await this.page.waitForTimeout(2000);
         await this.nextStep.click();

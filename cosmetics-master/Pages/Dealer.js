@@ -270,6 +270,13 @@ class DealerPage {
         await this.page.waitForTimeout(5000);
     }
 
+    GenerateMaxCharString(allowedChars, maxLength) {
+        if (!allowedChars) return 'א'.repeat(maxLength);
+        let result = '';
+        while (result.length < maxLength) result += allowedChars;
+        return result.substring(0, maxLength);
+    }
+
     async RegulationDealerBusinessCharTest(co = 0, name = "") {
         this.log.info("מתחיל רישום עוסק בתמרוק - בדיקת תווים מאופשרים");
 
@@ -292,11 +299,12 @@ class DealerPage {
         await this.legalEntity.click();
         await this.authorized.click();
 
-        // שם העסק — בדיקת תווים + מילוי שם בסיס עם תווים מאופשרים
+        // שם העסק — בדיקת תווים + מקסימום + מילוי מקסימום תווים מאופשרים
         const businessNameAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.businessName, "שם העסק");
-        await this.businessName.fill(t[1] + (businessNameAllowed || ""));
+        await this.sharedUtils.CheckMaxLength(this.businessName, 100, "שם העסק");
+        await this.businessName.fill(this.GenerateMaxCharString(businessNameAllowed || "א", 100));
 
-        // מספר מזהה — בדיקת תווים אבל מכניסים ת.ז רנדומלית תקינה
+        // מספר מזהה — בדיקת תווים בלבד, מכניסים ת.ז רנדומלית תקינה
         await this.sharedUtils.CheckCharactersAndGetAllowed(this.businessId, "מספר מזהה");
         await this.businessId.fill(randomId);
 
@@ -333,17 +341,19 @@ class DealerPage {
 
         await this.address.houseNumber.first().fill(this.env.houseNumber);
 
-        // הערות לכתובת — בדיקת תווים + מילוי
+        // הערות לכתובת — בדיקת תווים + מקסימום + מילוי
         const addrNotesAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.address.addressNotes, "הערות לכתובת");
-        await this.address.addressNotes.first().fill(addrNotesAllowed || "א");
+        await this.sharedUtils.CheckMaxLength(this.address.addressNotes, 100, "הערות לכתובת");
+        await this.address.addressNotes.first().fill(this.GenerateMaxCharString(addrNotesAllowed || "א", 100));
 
         await this.address.addressType.first().click();
         await this.address.otherAddress.first().waitFor({ state: 'visible' });
         await this.address.otherAddress.first().click();
 
-        // סוג כתובת אחר — בדיקת תווים + מילוי
+        // סוג כתובת אחר — בדיקת תווים + מקסימום + מילוי
         const otherAddrAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.address.otherAddressType, "סוג כתובת אחר");
-        await this.address.otherAddressType.first().fill(otherAddrAllowed || "א");
+        await this.sharedUtils.CheckMaxLength(this.address.otherAddressType, 400, "סוג כתובת אחר");
+        await this.address.otherAddressType.first().fill(this.GenerateMaxCharString(otherAddrAllowed || "א", 400));
 
         await this.oK1.click();
         await this.oK2.click();

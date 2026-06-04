@@ -44,21 +44,26 @@ class RegulationTaagidRPPage {
             await this.address.AddAddress(flug);
             await this.saveSubmit.click();
 
-            await this.page.waitForTimeout(3000);
-
-            if (await this.regulationDealer.dialog.isVisible()) {
-                let dialogText = await this.regulationDealer.dialog.textContent();
-                console.log(dialogText);
-                if (dialogText.includes("בהצלחה")) {
-                    let oldfilepath2 = this.po.dataFolder + '\\RP2.txt';
-                    await this.sharedUtils.WriteFile(oldfilepath2, t[1]);
-                }
-                await this.page.waitForTimeout(3000);
+            await this.regulationDealer.dialog.waitFor({ state: 'visible', timeout: 10000 });
+            const dialogText = await this.regulationDealer.dialog.textContent();
+            console.log(dialogText);
+            if (!dialogText.includes("בהצלחה")) {
+                throw new Error(`רישום תאגיד נציג אחראי נכשל: ${dialogText}`);
             }
+            this.log.info("✅ תאגיד נציג אחראי נרשם בהצלחה");
+            const oldfilepath2 = this.po.dataFolder + '\\RP2.txt';
+            await this.sharedUtils.WriteFile(oldfilepath2, t[1]);
         } catch (err) {
             this.log.error('LoginToDeaker error', err);
             throw err;
         }
+    }
+
+    GenerateMaxCharString(allowedChars, maxLength) {
+        if (!allowedChars) return 'א'.repeat(maxLength);
+        let result = '';
+        while (result.length < maxLength) result += allowedChars;
+        return result.substring(0, maxLength);
     }
 
     async LoginToDeakerCharTest(name = "") {
@@ -69,12 +74,11 @@ class RegulationTaagidRPPage {
         await this.tagidRP2.waitFor({ state: 'visible' });
         await this.tagidRP2.click();
 
-        // שם התאגיד — בדיקת תווים + מילוי שם בסיס + תווים מאופשרים
+        // שם התאגיד — בדיקת תווים + מקסימום + מילוי מקסימום תווים מאופשרים
         const businessNameAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.businessName, "שם התאגיד");
-        await this.businessName.fill(t[1] + (businessNameAllowed || ""));
+        await this.sharedUtils.CheckMaxLength(this.businessName, 100, "שם התאגיד");
+        await this.businessName.fill(this.GenerateMaxCharString(businessNameAllowed || "א", 100));
 
-        // ח.פ. — בדיקת תווים בלבד, מכניסים מספר תקין
-        await this.sharedUtils.CheckCharactersAndGetAllowed(this.businessId, "ח.פ.");
         await this.businessId.fill(t[0]);
 
         await this.page.waitForTimeout(2000);
@@ -99,14 +103,16 @@ class RegulationTaagidRPPage {
         await this.address.houseNumber.first().fill(this.env.houseNumber);
 
         const addrNotesAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.address.addressNotes, "הערות לכתובת");
-        await this.address.addressNotes.first().fill(addrNotesAllowed || "א");
+        await this.sharedUtils.CheckMaxLength(this.address.addressNotes, 100, "הערות לכתובת");
+        await this.address.addressNotes.first().fill(this.GenerateMaxCharString(addrNotesAllowed || "א", 100));
 
         await this.address.addressType.first().click();
         await this.address.otherAddress.first().waitFor({ state: 'visible' });
         await this.address.otherAddress.first().click();
 
         const otherAddrAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.address.otherAddressType, "סוג כתובת אחר");
-        await this.address.otherAddressType.first().fill(otherAddrAllowed || "א");
+        await this.sharedUtils.CheckMaxLength(this.address.otherAddressType, 400, "סוג כתובת אחר");
+        await this.address.otherAddressType.first().fill(this.GenerateMaxCharString(otherAddrAllowed || "א", 400));
 
         await this.saveSubmit.click();
         await this.page.waitForTimeout(3000);

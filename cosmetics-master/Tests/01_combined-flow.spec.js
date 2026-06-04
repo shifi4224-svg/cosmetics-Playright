@@ -12,8 +12,10 @@ const RegulationRPPage = require('../Pages/RegulationRP');
 const RegulationItemPage = require('../Pages/RegulationItem');
 const RegulationNotificationPage = require('../Pages/RegulationNotification');
 const ChageActivityBussinesPage = require('../Pages/ChageActivityBussines');
+const EditBussinesDetailsPage = require('../Pages/EditBussinesDetails');
+const UpdateProperImporterPage = require('../Pages/UpdateProperImporter');
 
-test.describe('טסט משולב - רישום 10 עוסקים והקמת 50 פריטים רגילים ו-50 נאות לכל עוסק', () => {
+test.describe('טסט משולב - רישום 30 עוסקים והקמת 200 פריטים רגילים ו-200 נאות לכל עוסק', () => {
     let po;
     let env;
     let dealerPage;
@@ -85,9 +87,91 @@ test.describe('טסט משולב - רישום 10 עוסקים והקמת 50 פר
         await po.loginPage.LoginDev();
     });
 
-    test('הרצת 10 מחזורים של רישום עוסק ופתיחת 100 פריטים בסך הכל', async ({ page }) => {
+    test('תהליך פרטי עסק - רישום תאגיד ופעולות פרטי עסק', async ({ page }) => {
+        test.setTimeout(3600000);
+
+        const editBussinesDetailsPage = new EditBussinesDetailsPage(page, po, env, console);
+        const updateProperImporterPage = new UpdateProperImporterPage(page, po, env, console);
+
+        // שלב 1: רישום עוסק בתמרוק תאגיד
+        const randomId = await po.GetRandomValidID();
+        const dealerName = `תאגיד פרטי עסק ${Date.now().toString().slice(-4)}`;
+        console.log(`רושם עוסק: ${dealerName}`);
+
+        await dealerPage.RegulationDealerBusiness(false, 1, dealerName, randomId);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 20000 });
+        let text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+
+        // שלב 2: שינוי פעילות עסק
+        console.log('מבצע שינוי פעילות עסק');
+        await chageActivityBussinesPage.ChangeActivity(["יבואן נאות"]);
+
+        // שלב 3: עריכת פרטי עסק
+        console.log('מבצע עריכת פרטי עסק');
+        await page.goto(env.url);
+        await editBussinesDetailsPage.UpdateBusinessDetails(0, `${dealerName} מעודכן`, "0501234567", "test@test.com");
+
+        // שלב 4: עריכת תנאי יצור נאותים
+        console.log('מבצע עדכון תנאי יצור נאותים');
+        await page.goto(env.url);
+        await updateProperImporterPage.Update();
+
+        // שלב 5: הוספת עובד ממונה
+        console.log('מוסיף עובד ממונה');
+        await page.goto(env.url);
+        await dealerPage.AuthorizedEmployeeDealer(`${dealerName} מעודכן`, randomId);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
+        text = await dealerPage.dialog.textContent();
+        expect(text).toContain('טרם הושלמה');
+        await dealerPage.okEnd.click();
+    });
+
+    test('תהליך מקצה לקצה - רישום עוסק, נציג אחראי, פריט רגיל ונוטיפיקציה', async ({ page }) => {
+        test.setTimeout(3600000);
+
+        // שלב 1: רישום עוסק בתמרוק תאגיד
+        const randomId = await po.GetRandomValidID();
+        const dealerName = `תאגיד E2E ${Date.now().toString().slice(-4)}`;
+        console.log(`רושם עוסק: ${dealerName}`);
+
+        await dealerPage.RegulationDealerBusiness(false, 1, dealerName, randomId);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 20000 });
+        let text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+
+        // שלב 2: רישום נציג אחראי מקושר לעסק
+        await page.goto(env.url);
+        await page.waitForTimeout(3000);
+        console.log(`רושם נציג אחראי עבור: ${dealerName}`);
+
+        await regulationRPPage.RegulationToBusiness(dealerName, false);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 20000 });
+        text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+
+        // שלב 4: הקמת פריט רגיל
+        const itemNameH = `פריט E2E ${Date.now().toString().slice(-4)}`;
+        const itemNameE = `E2E Item ${Date.now().toString().slice(-4)}`;
+        console.log(`מקים פריט: ${itemNameH}`);
+        await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
+
+        // שלב 5: הקמת נוטיפיקציה רגילה
+        console.log(`מקים נוטיפיקציה עבור: ${itemNameH}`);
+        await regulationNotificationPage.CreateNotificationSanity(itemNameH, false);
+
+        await expect(regulationNotificationPage.dialog).toBeVisible({ timeout: 20000 });
+        text = await regulationNotificationPage.dialog.textContent();
+        expect(text).toContain('נוטיפיקציה נשמרה בהצלחה');
+        await regulationNotificationPage.okEnd.click();
+    });
+
+    test('הרצת 30 מחזורים של רישום עוסק ופתיחת 400 פריטים לכל עוסק', async ({ page }) => {
         // לולאה חיצונית - 10 פעמים עבור רישום עוסקים
-        for (let i = 1; i <= 10; i++) {
+        for (let i = 1; i <= 30; i++) {
             console.log(`\n--- מתחיל מחזור עוסק ${i} מתוך 10 ---`);
             
             // החל מהמחזור השני - אף על פי שאנחנו כבר בדף הבית, ייתכן ויש חסימה נסתרת
@@ -128,7 +212,7 @@ test.describe('טסט משולב - רישום 10 עוסקים והקמת 50 פר
 
             console.log(`רישום נציג אחראי מקושר ליצרן/יבואן עבור: ${dealerName}`);
             // הוספת רישום נציג אחראי המקושר לעוסק שכרגע הוקם
-            await regulationRPPage.RegulationToBusiness(false, dealerName);
+            await regulationRPPage.RegulationToBusiness(dealerName, false);
             
             // אישור דיאלוג ההצלחה בסיום הרישום של הנציג האחראי
             await expect(dealerPage.dialog).toBeVisible({ timeout: 20000 });
@@ -141,7 +225,7 @@ test.describe('טסט משולב - רישום 10 עוסקים והקמת 50 פר
             const properItems = [];
 
             // לולאה פנימית 1 - 50 פעמים עבור הקמת פריטים רגילים
-            for (let j = 1; j <= 50; j++) {
+            for (let j = 1; j <= 200; j++) {
                 console.log(`מקים פריט רגיל ${j}/50 עבור עוסק ${i}/10`);
                 const itemNameH = `פריט משולב עוסק ${i} רגיל ${j}`;
                 const itemNameE = `Combined Regular ${i}-${j}`;
@@ -152,7 +236,7 @@ test.describe('טסט משולב - רישום 10 עוסקים והקמת 50 פר
             }
 
             // לולאה פנימית 2 - 50 פעמים עבור הקמת פריטים נאותים
-            for (let j = 1; j <= 50; j++) {
+            for (let j = 1; j <= 200; j++) {
                 console.log(`מקים פריט נאות ${j}/50 עבור עוסק ${i}/10`);
                 const itemNameH = `פריט משולב עוסק ${i} נאות ${j}`;
                 const itemNameE = `Combined Proper ${i}-${j}`;

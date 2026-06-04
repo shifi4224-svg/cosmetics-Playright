@@ -16,19 +16,17 @@ module.exports = defineConfig({
       name: 'chromium',
       use: { browserName: 'chromium' },
       testMatch: [
-        'dealer-registration.spec.js',
-        'rp-registration.spec.js',
-        'proper-production.spec.js',
-        'update-proper-importer.spec.js',
-        'business-details.spec.js',
-        'edit-business-details.spec.js',
-        'supervised-employee.spec.js',
-        'items.spec.js',
-        'regulation-item.spec.js',
-        'proper-notification.spec.js',
-        'regulation-notification.spec.js',
-        'backend-login.spec.js', // ← הוסיפי את שם הקובץ שלך כאן
-
+        '01_combined-flow.spec.js',
+        '**/02_dealer-registration.spec.js',
+        '**/03_rp-registration.spec.js',
+        '**/04_change-activity-business.spec.js',
+        '**/05_proper-production.spec.js',
+        '**/06_edit-business-details.spec.js',
+        '**/07_supervised-employee.spec.js',
+        '**/08_regulation-item.spec.js',
+        '**/09_regulation-notification.spec.js',
+        '**/10_proper-notification.spec.js',
+        '**/11_items.spec.js',
       ]
     }
   ]

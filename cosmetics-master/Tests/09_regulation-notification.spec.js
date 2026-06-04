@@ -68,11 +68,12 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
         await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
 
         // שלב 2: תהליך מילוי מרובה שלבים עם שמירת טיוטות ביניים
-        await regulationNotificationPage.CreateNotificationWithDrafts(itemNameH, true);
+        const dialogText = await regulationNotificationPage.CreateNotificationWithDrafts(itemNameH);
+        expect(dialogText).toContain('נוטיפיקציה נשמרה בהצלחה');
     });
 
-    test('יצירת נוטיפיקציה - בדיקת תווים מאופשרים ושמירה', async ({ page }) => {
-        test.setTimeout(3600000); // שעה — הטסט בודק כל תו בכל שדה
+    test('יצירת נוטיפיקציה - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
+        test.setTimeout(3600000); // שעה — הטסט בודק כל תו ומקסימום בכל שדה
         const uniqueId = Date.now().toString().slice(-4);
         const itemNameH = `בדיקת תווים ${uniqueId}`;
         const itemNameE = `Char Test ${uniqueId}`;
@@ -80,8 +81,8 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
         // שלב 1: מנכ"ל מוסיף פריט למאגר — כולל בדיקת תווים בשדות השם
         await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 0);
 
-        // שלב 2: ממלא כל שדה בתווים שמאופשרים בפועל ושולח
-        await regulationNotificationPage.CreateNotificationCharTest(itemNameH);
+        // שלב 2: בודק תווים + מקסימום תווים בכל שדה וממלא מקסימום תווים מאופשרים
+        await regulationNotificationPage.CreateNotificationCharAndMaxTest(itemNameH);
 
         // מוודא שהופיעה הודעת הצלחה וסוגר את הדיאלוג
         try {
@@ -89,26 +90,8 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
             expect(text).toContain('נוטיפיקציה נשמרה בהצלחה');
             await regulationNotificationPage.okEnd.click();
         } catch (err) {
-            await page.pause(); // עוצר ומחכה להמשך ידני
+            await page.pause();
             throw err;
         }
-    });
-
-    test('יצירת נוטיפיקציה - בדיקת שליחה עם מקסימום תווים מורשים', async ({ page }) => {
-        // נייצר שם ייחודי כדי שנוכל למצוא אותו בקלות בטבלה
-        const uniqueId = Date.now().toString().slice(-4);
-        const itemNameH = `מקסימום תווים ${uniqueId}`;
-        const itemNameE = `Max Chars ${uniqueId}`;
-
-        // שלב 1: מנכ"ל מוסיף פריט למאגר
-        await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
-
-        // שלב 2: תהליך מילוי ומילוי מקסימום תווים המותרים
-        await regulationNotificationPage.CreateNotificationMaxValidData(itemNameH);
-
-        // מוודא שהופיעה הודעת הצלחה וסוגר את הדיאלוג מהטסט
-        const text = await regulationNotificationPage.dialog.textContent();
-        expect(text).toContain('נוטיפיקציה נשמרה בהצלחה');
-        await regulationNotificationPage.okEnd.click();
     });
 });

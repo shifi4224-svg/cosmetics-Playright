@@ -64,28 +64,33 @@ class RegulationRPPage {
     }
 
 
-    async RegulationToCorpuration(name = "") {
+    async RegulationToCorpuration(name = "", flug = true) {
         this.log.info("רישום נציג אחראי מקושר לתאגיד");
         let corpurationName = name;
         if (name === "") {
             const oldfilepath = this.po.dataFolder + '\\RP2.txt';
             const result = await this.sharedUtils.ReadFile(oldfilepath);
-            corpurationName = result[0].trim(); // ← שורה ראשונה בלי רווחים
+            corpurationName = result[0].trim();
         }
+        await this.orderButton.waitFor({ state: 'visible', timeout: 10000 });
         await this.orderButton.click();
+        await this.rpIshKesher3.waitFor({ state: 'visible', timeout: 10000 });
         await this.rpIshKesher3.click();
         await this.yesCorporation.click();
         await this.corpuration.click();
         await this.corpuration.fill(corpurationName);
         await this.option.click();
-        await this.address.RPaddress();
-        await this.files.TestFileTypeValidation();
+        if (flug) {
+            await this.address.RPaddress();
+            await this.files.TestFileTypeValidation();
+        } else {
+            await this.address.RPaddressFast();
+        }
         const f = await this.files.AtachFile("", "Doc1.pdf");
-        console.log(1)
         await this.Save(f);
     }
 
-    async RegulationToBusiness(flug = true, name = "") {
+    async RegulationToBusiness(name = "", flug = true) {
         this.log.info("רישום נציג אחראי מקושר ליצרן או יבואן");
         let businessName = name;
         if (name === "") {
@@ -93,11 +98,14 @@ class RegulationRPPage {
             const result = await this.sharedUtils.ReadFile(oldfilepath);
             businessName = result[0].trim(); // ← שורה ראשונה בלי רווחים
         }
+        await this.orderButton.waitFor({ state: 'visible', timeout: 10000 });
         await this.orderButton.click();
         if (await this.isVisibleSafe(this.dialog, 2000)) {
             await this.okEnd.click();
+            await this.orderButton.waitFor({ state: 'visible', timeout: 10000 });
             await this.orderButton.click();
         }
+        await this.rpIshKesher3.waitFor({ state: 'visible', timeout: 10000 });
         await this.rpIshKesher3.click();
         await this.yesBusiness.click();
         await this.page.waitForTimeout(3000);
@@ -105,33 +113,51 @@ class RegulationRPPage {
         await this.business.fill(businessName);
         await this.option.click();
         await this.page.waitForTimeout(3000);
-        await this.address.RPaddress(flug);
         if (flug) {
+            await this.address.RPaddress();
             await this.files.TestFileTypeValidation();
+        } else {
+            await this.address.RPaddressFast();
         }
         const f = await this.files.AtachFile();
         await this.Save(f);
     }
 
-    async RegulationToRP(name = "") {
+    async RegulationToRP(name = "", flug = true) {
         this.log.info("רישום נציג אחראי בודד");
         const oldfilepath = this.po.dataFolder + '\\linked.txt';
         const t = await this.sharedUtils.ReadFileUpdate(oldfilepath);
         let businessName = t[1] + t[2] + name;
+        await this.orderButton.waitFor({ state: 'visible', timeout: 10000 });
         await this.orderButton.click();
+        await this.rpIshKesher3.waitFor({ state: 'visible', timeout: 10000 });
         await this.rpIshKesher3.click();
         await this.noBusiness.click();
-        await this.sharedUtils.CheckCharacters(this.business, "שם העסק", this.env.charBusinessName);
-        await this.sharedUtils.CheckMaxLength(this.business, 100, "שם העסק");
+        if (flug) {
+            await this.sharedUtils.CheckCharacters(this.business, "שם העסק", this.env.charBusinessName);
+            await this.sharedUtils.CheckMaxLength(this.business, 100, "שם העסק");
+        }
         await this.business.fill(businessName);
-        await this.sharedUtils.CheckCharacters(this.businessId, "מספר מזהה", this.env.charBusinessId);
-        await this.sharedUtils.CheckMaxLength(this.businessId, 9, "מספר מזהה");
+        if (flug) {
+            await this.sharedUtils.CheckCharacters(this.businessId, "מספר מזהה", this.env.charBusinessId);
+            await this.sharedUtils.CheckMaxLength(this.businessId, 9, "מספר מזהה");
+        }
         await this.businessId.fill(t[0]);
-
-        await this.address.RPaddress();
-        await this.files.TestFileTypeValidation();
+        if (flug) {
+            await this.address.RPaddress();
+            await this.files.TestFileTypeValidation();
+        } else {
+            await this.address.RPaddressFast();
+        }
         const f = await this.files.AtachFile();
         await this.Save(f);
+    }
+
+    GenerateMaxCharString(allowedChars, maxLength) {
+        if (!allowedChars) return 'א'.repeat(maxLength);
+        let result = '';
+        while (result.length < maxLength) result += allowedChars;
+        return result.substring(0, maxLength);
     }
 
     async RegulationToRPCharTest(name = "") {
@@ -147,9 +173,10 @@ class RegulationRPPage {
         await this.rpIshKesher3.click();
         await this.noBusiness.click();
 
-        // שם העסק — בדיקת תווים + מילוי
+        // שם העסק — בדיקת תווים + מקסימום + מילוי מקסימום תווים מאופשרים
         const businessNameAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.business, "שם העסק");
-        await this.business.fill((t[1] + t[2] + name + (businessNameAllowed || "")).substring(0, 100));
+        await this.sharedUtils.CheckMaxLength(this.business, 100, "שם העסק");
+        await this.business.fill(this.GenerateMaxCharString(businessNameAllowed || "א", 100));
 
         // מספר מזהה — בדיקת תווים בלבד, מכניסים מספר תקין
         await this.sharedUtils.CheckCharactersAndGetAllowed(this.businessId, "מספר מזהה");

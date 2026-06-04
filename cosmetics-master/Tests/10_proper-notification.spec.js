@@ -42,8 +42,26 @@ test.describe('בדיקות הקמת נוטיפיקציה נאותה', () => {
         await properNotificationPage.CreateProperNotification(true);
     });
 
-    test('הקמת נוטיפיקציה נאותה - בדיקת תווים מאופשרים ושמירה', async ({ page }) => {
-        test.setTimeout(3600000); // שעה — הטסט בודק כל תו בכל שדה
+    test('הקמת נוטיפיקציה נאותה עם שמירת טיוטה אחרי כל שלב', async ({ page }) => {
+        test.setTimeout(3600000); // שעה — הטסט כולל מילוי רב שלבים
+        const uniqueId = Date.now().toString().slice(-4);
+        const itemNameH = `נוטיפיקציה נאות טיוטות ${uniqueId}`;
+        const itemNameE = `Proper Draft ${uniqueId}`;
+
+        await regulationItemPage.AddItem(itemNameH, itemNameE, 1, false);
+
+        const dialogText = await properNotificationPage.CreateProperNotificationWithDrafts(itemNameH);
+
+        try {
+            expect(dialogText).toContain('נוטיפיקציה נשמרה בהצלחה');
+        } catch (err) {
+            await page.pause();
+            throw err;
+        }
+    });
+
+    test('הקמת נוטיפיקציה נאותה - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
+        test.setTimeout(3600000); // שעה — הטסט בודק כל תו ומקסימום בכל שדה
         const uniqueId = Date.now().toString().slice(-4);
         const itemNameH = `בדיקת תווים נאות ${uniqueId}`;
         const itemNameE = `Proper Char Test ${uniqueId}`;
@@ -51,8 +69,8 @@ test.describe('בדיקות הקמת נוטיפיקציה נאותה', () => {
         // שלב 1: מנכ"ל מוסיף פריט נאות למאגר — כולל בדיקת תווים בשדות השם
         await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 1);
 
-        // שלב 2: ממלא כל שדה בתווים שמאופשרים בפועל ושולח
-        await properNotificationPage.CreateProperNotificationCharTest(itemNameH);
+        // שלב 2: בודק תווים + מקסימום תווים בכל שדה וממלא מקסימום תווים מאופשרים
+        await properNotificationPage.CreateProperNotificationCharAndMaxTest(itemNameH);
 
         // מוודא שהופיעה הודעת הצלחה וסוגר את הדיאלוג
         try {

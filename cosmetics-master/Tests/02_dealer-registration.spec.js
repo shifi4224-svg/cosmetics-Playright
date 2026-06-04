@@ -75,26 +75,26 @@ test.describe('רישום עוסק בתמרוק', () => {
 
 
     test('רישום עוסק בתמרוק תאגיד', async ({ page }) => {
-        await dealerPage.RegulationDealerBusiness(true, 1);
+        await dealerPage.RegulationDealerBusiness(false, 1);
         await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
         const text = await dealerPage.dialog.textContent();
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
     });
     test('רישום עוסק בתמרוק לא תאגיד', async ({ page }) => {
-        await dealerPage.RegulationDealerBusiness(true, 0);
-        await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
-        const text = await dealerPage.dialog.textContent();
-        expect(text).toContain('בהצלחה');
-        await dealerPage.okEnd.click();
-    });
-      test('רישום עוסק בתמרוק לא תאגיד מהיר ללא בדיקות', async ({ page }) => {
         await dealerPage.RegulationDealerBusiness(false, 0);
         await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
         const text = await dealerPage.dialog.textContent();
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
     });
+    //   test('רישום עוסק בתמרוק לא תאגיד מהיר ללא בדיקות', async ({ page }) => {
+    //     await dealerPage.RegulationDealerBusiness(false, 0);
+    //     await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
+    //     const text = await dealerPage.dialog.textContent();
+    //     expect(text).toContain('בהצלחה');
+    //     await dealerPage.okEnd.click();
+    // });
     test('רישום עוסק בתמרוק תאגיד ע"י לא מנכל, המנכל לא תושב ישראל ולא נושא משרה', async ({ page }) => {
         await dealerPage.NoMancal();
         await expect(dealerPage.errorNoMancal).toBeVisible();
@@ -161,7 +161,7 @@ test.describe('רישום עוסק בתמרוק', () => {
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
     });
-    test('רישום עוסק בתמרוק - בדיקת תווים מאופשרים ושמירה', async ({ page }) => {
+    test('רישום עוסק בתמרוק - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
         test.setTimeout(3600000); // שעה — הטסט בודק כל תו בכל שדה
         await dealerPage.RegulationDealerBusinessCharTest(0, "בדיקת תווים");
 

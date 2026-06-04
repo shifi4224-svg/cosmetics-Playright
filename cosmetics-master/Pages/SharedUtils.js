@@ -462,7 +462,7 @@ class SharedUtils {
         code = `//span[text() ="${bussines}"]`;
 
         this.log.info(`פותח עמוד מנכל של עסק ${bussines}`);
-        await this.page.locator('//*[contains(text(), "מנכל")]').click();
+        await this.page.locator('//span[@class="sidebar-text ng-star-inserted" and text()="מנכל"]').click();
 
         if (await this.isVisibleSafe('//div[@role="dialog"]', 1000)) {
             await this.page.locator('//button[@class="main-button narrow"]').click();

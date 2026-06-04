@@ -83,7 +83,7 @@ test.describe('רישום תאגיד נציג אחראי', () => {
         await dealerPage.okEnd.click();
     });
 
-    test('הקמת תאגיד נציג אחראי - בדיקת תווים מאופשרים ושמירה', async ({ page }) => {
+    test('הקמת תאגיד נציג אחראי - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
         test.setTimeout(3600000);
         await regulationTaagidRP.LoginToDeakerCharTest("בדיקת תווים");
 
@@ -158,7 +158,7 @@ test.describe('רישום נציג אחראי (3 סוגים)', () => {
     });
     test('רישום נציג אחראי מקושר ליצרן או יבואן', async ({ page }) => {
         // מריץ את מתודת הרישום עבור יצרן/יבואן (flug=true כדי להריץ ולידציות)
-        await regulationRPPage.RegulationToBusiness(true);
+        await regulationRPPage.RegulationToBusiness();
         await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
         const text = await dealerPage.dialog.textContent();
         expect(text).toContain('בהצלחה');
@@ -180,7 +180,7 @@ test.describe('רישום נציג אחראי (3 סוגים)', () => {
         await dealerPage.okEnd.click();
     });
 
-    test('רישום נציג אחראי בודד - בדיקת תווים מאופשרים ושמירה', async ({ page }) => {
+    test('רישום נציג אחראי בודד - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
         test.setTimeout(3600000);
         await regulationRPPage.RegulationToRPCharTest("בדיקת תווים");
 
