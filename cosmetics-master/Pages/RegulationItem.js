@@ -86,6 +86,45 @@ class RegulationItemPage {
         await this.addNew.waitFor({ state: 'visible', timeout: 10000 });
     }
 
+    async AddItemFast(nameH, nameE, b, euro = 0) {
+        await this.addNew.click();
+
+        if (euro === 1) {
+            await this.europeanRoute.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {
+                throw new Error("הכפתור 'מסלול אירופאי' לא נמצא.");
+            });
+            await this.europeanRoute.first().click({ force: true });
+            await this.okEnd.click();
+        } else {
+            await this.basicRoute.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {
+                throw new Error("הכפתור 'מסלול בסיסי' לא נמצא.");
+            });
+            await this.basicRoute.first().click({ force: true });
+        }
+
+        await this.hebrewCosmetics.waitFor({ state: 'visible', timeout: 5000 });
+        await this.hebrewCosmetics.fill(nameH);
+        await this.englishCosmetics.fill(nameE);
+        await this.business.click();
+        await this.business.fill(b);
+        await this.option.click();
+        await this.rPCosmetics.click();
+        await this.rPCosmetics.fill(this.env.name || "שפרה הקר");
+        await this.option.click();
+        await this.save.click();
+        await this.dialog.waitFor({ state: 'visible', timeout: 10000 });
+        const dialogText = await this.dialog.textContent();
+        if (dialogText.includes("אנא נסה שוב")) {
+            this.log.info("⚠️ שגיאת שרת בהוספת פריט - ממתין להמשך ידני...");
+            await this.okEnd.click();
+            await this.page.pause();
+            await this.save.click();
+            await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
+        }
+        await this.okEnd.click();
+        await this.addNew.waitFor({ state: 'visible', timeout: 10000 });
+    }
+
     async AddItemCharTest(nameH, nameE, euro = 0) {
         const b = await this.sharedUtils.OpenPageMancal();
         await this.addNew.click();

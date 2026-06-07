@@ -226,25 +226,24 @@ test.describe('טסט משולב - רישום 30 עוסקים והקמת 200 פ�
             const regularItems = [];
             const properItems = [];
 
-            // לולאה פנימית 1 - 50 פעמים עבור הקמת פריטים רגילים
+            // כניסה לעסק פעם אחת בלבד לפני הלולאה
+            const businessName = await sharedUtils.OpenPageMancal();
+
+            // לולאה פנימית 1 - 200 פעמים עבור הקמת פריטים רגילים
             for (let j = 1; j <= 200; j++) {
-                console.log(`מקים פריט רגיל ${j}/50 עבור עוסק ${i}/10`);
+                console.log(`מקים פריט רגיל ${j}/200 עבור עוסק ${i}/30`);
                 const itemNameH = `פריט משולב עוסק ${i} רגיל ${j}`;
                 const itemNameE = `Combined Regular ${i}-${j}`;
-                
-                // הוספת פריט רגיל (מסלול 0) ללא ולידציות (false) כדי לזרז את התהליך
-                await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
+                await regulationItemPage.AddItemFast(itemNameH, itemNameE, businessName, 0);
                 regularItems.push(itemNameH);
             }
 
-            // לולאה פנימית 2 - 50 פעמים עבור הקמת פריטים נאותים
+            // לולאה פנימית 2 - 200 פעמים עבור הקמת פריטים נאותים
             for (let j = 1; j <= 200; j++) {
-                console.log(`מקים פריט נאות ${j}/50 עבור עוסק ${i}/10`);
+                console.log(`מקים פריט נאות ${j}/200 עבור עוסק ${i}/30`);
                 const itemNameH = `פריט משולב עוסק ${i} נאות ${j}`;
                 const itemNameE = `Combined Proper ${i}-${j}`;
-                
-                // הוספת פריט נאות (מסלול 1) ללא ולידציות (false)
-                await regulationItemPage.AddItem(itemNameH, itemNameE, 1, false);
+                await regulationItemPage.AddItemFast(itemNameH, itemNameE, businessName, 1);
                 properItems.push(itemNameH);
             }
 
@@ -310,5 +309,31 @@ test.describe('טסט משולב - רישום 30 עוסקים והקמת 200 פ�
                 }
             }
         }
+    });
+
+    test('הקמת 600 פריטים - 300 רגיל ו-300 נאות לעסק קיים', async ({ page }) => {
+        test.setTimeout(36000000);
+
+        // קריאת שם העסק מהקובץ
+        const businessName = await sharedUtils.OpenPageMancal();
+        console.log(`מקים פריטים עבור עסק: ${businessName}`);
+
+        // לולאה 1 - 300 פריטים רגילים
+        for (let j = 1; j <= 300; j++) {
+            console.log(`מקים פריט רגיל ${j}/300`);
+            const itemNameH = `פריט רגיל ${Date.now().toString().slice(-4)}_${j}`;
+            const itemNameE = `Regular Item ${Date.now().toString().slice(-4)}_${j}`;
+            await regulationItemPage.AddItemFast(itemNameH, itemNameE, businessName, 0);
+        }
+
+        // לולאה 2 - 300 פריטים נאותים
+        for (let j = 1; j <= 300; j++) {
+            console.log(`מקים פריט נאות ${j}/300`);
+            const itemNameH = `פריט נאות ${Date.now().toString().slice(-4)}_${j}`;
+            const itemNameE = `Proper Item ${Date.now().toString().slice(-4)}_${j}`;
+            await regulationItemPage.AddItemFast(itemNameH, itemNameE, businessName, 1);
+        }
+
+        console.log('הסתיימה הקמת 600 הפריטים');
     });
 });
