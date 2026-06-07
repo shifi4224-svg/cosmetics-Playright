@@ -47,7 +47,15 @@ class RegulationTaagidRPPage {
             await this.regulationDealer.dialog.waitFor({ state: 'visible', timeout: 10000 });
             const dialogText = await this.regulationDealer.dialog.textContent();
             console.log(dialogText);
-            if (!dialogText.includes("בהצלחה")) {
+            if (dialogText.includes("אנא נסה שוב")) {
+                this.log.info("⚠️ שגיאת שרת - ממתין להמשך ידני...");
+                await this.okEnd.click();
+                await this.page.pause();
+                await this.saveSubmit.click();
+                await this.regulationDealer.dialog.waitFor({ state: 'visible', timeout: 30000 });
+                const retryText = await this.regulationDealer.dialog.textContent();
+                if (!retryText.includes("בהצלחה")) throw new Error(`רישום תאגיד נציג אחראי נכשל: ${retryText}`);
+            } else if (!dialogText.includes("בהצלחה")) {
                 throw new Error(`רישום תאגיד נציג אחראי נכשל: ${dialogText}`);
             }
             this.log.info("✅ תאגיד נציג אחראי נרשם בהצלחה");

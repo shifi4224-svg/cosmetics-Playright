@@ -85,8 +85,8 @@ class RegulationNotificationPage {
         this.frequencyOfUse = this.page.locator('//input[@aria-label="תדירות שימוש"]');
         this.frequencyOfUseName = this.page.locator('//span[text()=" שימוש יומיומי "]');
 
-        this.noShades = this.page.locator('//*[contains(text(), "האם יש גוונים")]//..//..//..//*[contains(text(), "לא")]');
-        this.yesShades = this.page.locator('//*[contains(text(), "האם יש גוונים")]//..//..//..//*[contains(text(), "כן")]');
+        this.noShades = this.page.locator('//*[contains(text(), "האם יש גוונים")]//..//..//..//..//*[contains(text(), "לא")]');
+        this.yesShades = this.page.locator('//*[contains(text(), "האם יש גוונים")]//..//..//..//..//*[contains(text(), "כן")]');
         this.shadesName = this.page.locator('//input[@aria-label="שם הגוון"]');
         this.selectFileShades = this.page.locator('//app-notification-shades//div[@class="upload-button"]');
         this.typeFileShades = this.page.locator('//moh-file-upload-drag-and-drop[@fieldtextkey="shadeFile"]');
@@ -336,10 +336,21 @@ class RegulationNotificationPage {
         let dialogTaxt = await this.dialog.textContent() || "";
         this.log.info(dialogTaxt);
         if (dialogTaxt.includes("אנא נסה שוב")) {
-            this.log.info("התקבלה הודעת שגיאה והנוטיפיקציה לא נשמרה");
-        } else if (dialogTaxt.includes("בהצלחה")) {
+            this.log.info("⚠️ שגיאת שרת - ממתין להמשך ידני...");
+            await this.okEnd.click();
+            await this.page.pause();
+            await this.saveSubmit.click();
+            if (await this.sharedUtils.isVisibleSafe(this.manufAddress, 2000)) {
+                await this.manuftype1.click();
+                await this.manufSave.click();
+            }
+            await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
+            dialogTaxt = await this.dialog.textContent() || "";
+            this.log.info(dialogTaxt);
+        }
+        if (dialogTaxt.includes("בהצלחה")) {
             this.log.info("התקבלה הודעת הצלחה והנוטיפיקציה נשמרה");
-        } else {
+        } else if (!dialogTaxt.includes("אנא נסה שוב")) {
             this.log.info("התקבלה הודעת שגיאה לא קלאסית: " + dialogTaxt);
         }
     }

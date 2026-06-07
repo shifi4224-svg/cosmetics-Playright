@@ -73,7 +73,15 @@ class RegulationItemPage {
         await this.rPCosmetics.fill(this.env.name || "שפרה הקר");
         await this.option.click();
         await this.save.click();
-        await this.okEnd.waitFor({ state: 'visible', timeout: 5000 });
+        await this.dialog.waitFor({ state: 'visible', timeout: 10000 });
+        const dialogText = await this.dialog.textContent();
+        if (dialogText.includes("אנא נסה שוב")) {
+            this.log.info("⚠️ שגיאת שרת בהוספת פריט - ממתין להמשך ידני...");
+            await this.okEnd.click();
+            await this.page.pause();
+            await this.save.click();
+            await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
+        }
         await this.okEnd.click();
         await this.addNew.waitFor({ state: 'visible', timeout: 10000 });
     }

@@ -14,7 +14,7 @@ module.exports = defineConfig({
     // פותח את הדפדפן בגודל מסך מלא
     viewport: null,
     launchOptions: {
-      args: ['--start-maximized'],
+      args: ['--start-maximized', '--auto-open-devtools-for-tabs', '--force-device-scale-factor=0.7'],
     },
   },
   projects: [

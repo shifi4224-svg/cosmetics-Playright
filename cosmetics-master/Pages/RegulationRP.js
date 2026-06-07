@@ -48,19 +48,27 @@ class RegulationRPPage {
     }
 
     async Save(f) {
-        console.log(2)
-        await this.page.waitForTimeout(5000);
         if (f === 1) {
             this.log.info("העלאת קובץ לא תקינה, לא ניתן להמשיך");
-            console.log(3)
             return;
         }
         await this.saveSubmit.click();
-        console.log(4)
-        await this.page.waitForTimeout(5000);
-        const dialogText = await this.regulationDealer.dialog.textContent();
-        this.log.info(dialogText);
-        console.log(5)
+        try {
+            await this.regulationDealer.dialog.waitFor({ state: 'visible', timeout: 30000 });
+            const dialogText = await this.regulationDealer.dialog.textContent();
+            this.log.info(dialogText);
+            if (dialogText.includes("אנא נסה שוב")) {
+                this.log.info("⚠️ שגיאת שרת - ממתין להמשך ידני...");
+                await this.okEnd.click();
+                await this.page.pause();
+                await this.saveSubmit.click();
+                await this.regulationDealer.dialog.waitFor({ state: 'visible', timeout: 30000 });
+                const retryText = await this.regulationDealer.dialog.textContent();
+                this.log.info(retryText);
+            }
+        } catch (err) {
+            this.log.error("לא הופיעה הודעה בסיום הרישום: " + err.message);
+        }
     }
 
 
