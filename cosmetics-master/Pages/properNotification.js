@@ -340,7 +340,7 @@ class ProperNotificationPage {
         const d1 = await this.page.locator('//*[@role="dialog"]').textContent();
         if (!d1.includes("נשמרה בהצלחה")) throw new Error(`טיוטה 1 נכשלה: ${d1}`);
         this.log.info("✅ טיוטה 1 נשמרה");
-        await this.page.locator('//button[@class="main-button narrow"]').click();
+        await this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').click();
 
         // --- טיוטה 2: פרטי התמרוק ---
         this.log.info("טיוטה 2 — פרטי התמרוק");
@@ -386,7 +386,7 @@ class ProperNotificationPage {
         const d2 = await this.page.locator('//*[@role="dialog"]').textContent();
         if (!d2.includes("נשמרה בהצלחה")) throw new Error(`טיוטה 2 נכשלה: ${d2}`);
         this.log.info("✅ טיוטה 2 נשמרה");
-        await this.page.locator('//button[@class="main-button narrow"]').click();
+        await this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').click();
 
         // --- טיוטה 3: אוכלוסיות יעד ---
         this.log.info("טיוטה 3 — אוכלוסיות יעד");
@@ -409,7 +409,7 @@ class ProperNotificationPage {
         const d3 = await this.page.locator('//*[@role="dialog"]').textContent();
         if (!d3.includes("נשמרה בהצלחה")) throw new Error(`טיוטה 3 נכשלה: ${d3}`);
         this.log.info("✅ טיוטה 3 נשמרה");
-        await this.page.locator('//button[@class="main-button narrow"]').click();
+        await this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').click();
 
         // --- שמירה סופית: הצהרה ---
         this.log.info("טיוטה 4 — הצהרה ושמירה סופית");
@@ -422,7 +422,7 @@ class ProperNotificationPage {
         await dialog.waitFor({ state: 'visible' });
         const finalText = await dialog.textContent();
         this.log.info(finalText);
-        await this.page.locator('//button[@class="main-button narrow"]').click();
+        await this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').click();
         return finalText;
     }
 

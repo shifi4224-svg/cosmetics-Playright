@@ -50,7 +50,7 @@ class DealerPage {
         this.accuracyOfData2 = this.page.locator('//*[contains(text(), "הפרטים ")]//..//input[@type="checkbox"]');
         this.saveSubmit = this.page.locator('//moh-button[@type="submit"]');
         this.dialog = this.page.locator('//div[@role="dialog"]');
-        this.okEnd = this.page.locator('//button[@class="main-button narrow"]');
+        this.okEnd = this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').first();
         this.errorInvalidCharacter = this.page.locator('//*[contains(text(), "תו לא חוקי")]');
         this.errorIncompatiblePrefix = this.page.locator('//*[contains(text(), "התחילית לא תואמת לישות המשפטית")]');
         this.errorIncompatibleId = this.page.locator('//*[contains(text(), "מספר זהות לא תקין")]');
@@ -118,7 +118,7 @@ class DealerPage {
             const dialogText = await this.dialog.textContent();
             console.log(dialogText);
             if (await this.isVisibleSafe(this.error, 3000)) {
-                const errorText = await this.error.textContent();
+                const errorText = await this.error.first().textContent();
                 console.log("השגיאה היא: " + errorText);
 
             }
@@ -247,27 +247,31 @@ class DealerPage {
         await this.accuracyOfData1.click();
         await this.accuracyOfData2.click();
         await this.saveSubmit.click();
-        await this.page.waitForTimeout(6000);
 
-        if (await this.isVisibleSafe(this.dialog, 4000)) {
-            const dialogText = await this.dialog.textContent();
-            console.log("תוצאת הרישום היא: \n" + dialogText);
-            try {
-                if (dialogText.includes("אנא נסה שוב")) {
-                    await this.CheckNetworkErrors();
-                } else if (dialogText.includes("בהצלחה")) {
-                    console.log("מתחיל רישום בקובץ");
+        try {
+            await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
+            const dialogText1 = await this.dialog.textContent();
+            console.log("תוצאת הרישום היא: \n" + dialogText1);
+            if (dialogText1.includes("אנא נסה שוב")) {
+                this.log.info("⚠️ שגיאת שרת - ממתין להמשך ידני...");
+                await this.okEnd.click();
+                await this.page.pause();
+                await this.saveSubmit.click();
+                await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
+                const retryText = await this.dialog.textContent();
+                if (retryText.includes("בהצלחה")) {
                     const oldfilepath = this.po.dataFolder + '\\RP.txt';
                     await this.sharedUtils.WriteFile(oldfilepath, t[1]);
-                    console.log("סיים רישום בקובץ");
                 }
-            } catch (err) {
-                console.log(err.message);
+            } else if (dialogText1.includes("בהצלחה")) {
+                console.log("מתחיל רישום בקובץ");
+                const oldfilepath = this.po.dataFolder + '\\RP.txt';
+                await this.sharedUtils.WriteFile(oldfilepath, t[1]);
+                console.log("סיים רישום בקובץ");
             }
-        } else {
-            console.log("לא הופיע הודעה בסיום הרישום");
+        } catch (err) {
+            console.log("לא הופיעה הודעה בסיום הרישום: " + err.message);
         }
-        await this.page.waitForTimeout(5000);
     }
 
     GenerateMaxCharString(allowedChars, maxLength) {
@@ -374,15 +378,28 @@ class DealerPage {
         await this.accuracyOfData1.click();
         await this.accuracyOfData2.click();
         await this.saveSubmit.click();
-        await this.page.waitForTimeout(6000);
 
-        if (await this.isVisibleSafe(this.dialog, 4000)) {
-            const dialogText = await this.dialog.textContent();
-            this.log.info("תוצאת הרישום: " + dialogText);
-            if (dialogText.includes("בהצלחה")) {
+        try {
+            await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
+            const dialogText2 = await this.dialog.textContent();
+            this.log.info("תוצאת הרישום: " + dialogText2);
+            if (dialogText2.includes("אנא נסה שוב")) {
+                this.log.info("⚠️ שגיאת שרת - ממתין להמשך ידני...");
+                await this.okEnd.click();
+                await this.page.pause();
+                await this.saveSubmit.click();
+                await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
+                const retryText2 = await this.dialog.textContent();
+                if (retryText2.includes("בהצלחה")) {
+                    const oldfilepath = this.po.dataFolder + '\\RP.txt';
+                    await this.sharedUtils.WriteFile(oldfilepath, t[1]);
+                }
+            } else if (dialogText2.includes("בהצלחה")) {
                 const oldfilepath = this.po.dataFolder + '\\RP.txt';
                 await this.sharedUtils.WriteFile(oldfilepath, t[1]);
             }
+        } catch (err) {
+            console.log("לא הופיעה הודעה בסיום הרישום: " + err.message);
         }
     }
 

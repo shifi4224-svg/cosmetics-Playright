@@ -18,7 +18,7 @@ class RegulationTaagidRPPage {
         this.businessName = this.page.locator('//input[@aria-label="שם התאגיד"]');
         this.businessId = this.page.locator('//input[@aria-label="ח.פ."]');
         this.saveSubmit = this.page.locator('//moh-button[@type="submit"]');
-        this.okEnd = this.page.locator('//button[@class="main-button narrow"]');
+        this.okEnd = this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]');
     }
 
     async LoginToDeaker(flug = true, name = "", idd = "") {

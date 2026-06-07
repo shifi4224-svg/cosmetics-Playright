@@ -114,7 +114,7 @@ class RegulationNotificationPage {
 
         this.saveSubmit = this.page.locator('//button[@type="submit"]');
         this.dialog = this.page.locator('//div[@role="dialog"]');
-        this.okEnd = this.page.locator('//button[@class="main-button narrow"]');
+        this.okEnd = this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]');
         this.nextStep = this.page.locator('//moh-button[@class="next-btn ng-star-inserted"]');
         this.saveDraft = this.page.locator('//span[text()="שמירת טיוטה"] | //moh-button[@class="action-btn ng-star-inserted"]');
         this.manufAddress = this.page.locator('//mat-dialog-container[@role="dialog"]');

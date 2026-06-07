@@ -22,7 +22,7 @@ class RegulationItemPage {
         this.save = this.page.locator('//moh-button[@textkey="שמירה"]');
         this.back = this.page.locator('//moh-button[@textkey="ביטול"]');
         this.option = this.page.locator('//mat-option');
-        this.okEnd = this.page.locator('//button[@class="main-button wide"]');
+        this.okEnd = this.page.locator('//button[@class="main-button wide"] | //button[normalize-space()="אישור"] | //button[normalize-space()="OK"]').first();
         this.dialog = this.page.locator('//div[@role="dialog"]');
         this.sadeBar = this.page.locator('//*[@class="sidebar-items"]');
         this.mancal = this.page.locator('//*[contains(text(), "מנכל")]');
@@ -34,7 +34,7 @@ class RegulationItemPage {
         this.extOkItem = this.page.locator('//mat-row[@role="row"][1]//button[@title="אשר פריט"]');
         this.extRow = this.page.locator('//mat-row[@role="row"][1]');
         this.extCreateN = this.page.locator('//button[@class="primary-btn"]');
-        this.extOkEndNarrow = this.page.locator('//button[@class="main-button narrow"]');
+        this.extOkEndNarrow = this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]');
 
     }
 

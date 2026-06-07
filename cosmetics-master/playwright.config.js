@@ -10,6 +10,12 @@ module.exports = defineConfig({
 
     // שומר צילום מסך אם הטסט נכשל
     screenshot: 'only-on-failure',
+
+    // פותח את הדפדפן בגודל מסך מלא
+    viewport: null,
+    launchOptions: {
+      args: ['--start-maximized'],
+    },
   },
   projects: [
     {

@@ -158,6 +158,8 @@ test.describe('טסט משולב - רישום 30 עוסקים והקמת 200 פ�
         const itemNameE = `E2E Item ${Date.now().toString().slice(-4)}`;
         console.log(`מקים פריט: ${itemNameH}`);
         await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
+        await page.reload();
+        await page.waitForTimeout(3000);
 
         // שלב 5: הקמת נוטיפיקציה רגילה
         console.log(`מקים נוטיפיקציה עבור: ${itemNameH}`);
@@ -269,7 +271,7 @@ test.describe('טסט משולב - רישום 30 עוסקים והקמת 200 פ�
                     await approveBtn.click();
                     
                     // אישור פעולת האישור (כפתור צר בחלונית המעבר)
-                    const extOkEndNarrow = page.locator('//button[@class="main-button narrow"]').first();
+                    const extOkEndNarrow = page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').first();
                     try {
                         await extOkEndNarrow.waitFor({ state: 'visible', timeout: 3000 });
                         await extOkEndNarrow.click();

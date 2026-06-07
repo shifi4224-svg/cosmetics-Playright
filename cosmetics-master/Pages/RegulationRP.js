@@ -29,7 +29,7 @@ class RegulationRPPage {
         this.tazhir = this.page.locator('//*[@type = "file"]');
         this.saveSubmit = this.page.locator('//moh-button[@textkey="saveAndSend"]');
         this.dialog = this.page.locator('//*[@role ="dialog"]');
-        this.okEnd = this.page.locator('//button[@class="main-button narrow"]');
+        this.okEnd = this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]');
         this.errorFile = this.page.locator('//span[contains(text(), "לא נתמך")]');
         this.delFile = this.page.locator('//i[@class="moh-icon delete"]');
         this.error = this.page.locator('//*[@class="error-message ng-star-inserted"]');

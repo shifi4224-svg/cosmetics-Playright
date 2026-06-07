@@ -381,8 +381,8 @@ class SharedUtils {
         }
         await this.page.waitForTimeout(2000);
         
-        if (await this.isVisibleSafe('//button[@class="main-button narrow"]', 1000)) {
-             await this.page.locator('//button[@class="main-button narrow"]').click();
+        if (await this.isVisibleSafe('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]', 1000)) {
+             await this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').click();
         }
         await this.page.waitForTimeout(2000);
 
@@ -465,7 +465,7 @@ class SharedUtils {
         await this.page.locator('//span[@class="sidebar-text ng-star-inserted" and text()="מנכל"]').click();
 
         if (await this.isVisibleSafe('//div[@role="dialog"]', 1000)) {
-            await this.page.locator('//button[@class="main-button narrow"]').click();
+            await this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').click();
         }
         await this.page.waitForTimeout(500);
         
