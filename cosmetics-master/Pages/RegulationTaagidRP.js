@@ -25,7 +25,8 @@ class RegulationTaagidRPPage {
         try {
             console.log("רישום תאגיד נציג אחראי");
             const t = await this.regulationDealer.ReadIdName(idd, name);
-            await this.orderButton.click();
+            await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
             await this.tagidRP2.waitFor({ state: 'visible' });
             await this.tagidRP2.click();
 
@@ -78,7 +79,8 @@ class RegulationTaagidRPPage {
         this.log.info("רישום תאגיד נציג אחראי - בדיקת תווים מאופשרים");
         const t = await this.regulationDealer.ReadIdName("", name || "בדיקת תווים");
 
-        await this.orderButton.click();
+        await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
         await this.tagidRP2.waitFor({ state: 'visible' });
         await this.tagidRP2.click();
 
@@ -140,7 +142,8 @@ class RegulationTaagidRPPage {
             console.log("רישום תאגיד נציג אחראי - לא מנכ\"ל");
             const t = await this.regulationDealer.ReadIdName(idd, name);
             
-            await this.orderButton.click();
+            await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
             await this.tagidRP2.waitFor({ state: 'visible' });
             await this.tagidRP2.click();
 

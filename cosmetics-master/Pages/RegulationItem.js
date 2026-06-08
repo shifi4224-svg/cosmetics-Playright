@@ -83,6 +83,7 @@ class RegulationItemPage {
             await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
         }
         await this.okEnd.click();
+        await this.page.reload();
         await this.addNew.waitFor({ state: 'visible', timeout: 10000 });
     }
 
@@ -122,6 +123,7 @@ class RegulationItemPage {
             await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
         }
         await this.okEnd.click();
+        await this.sharedUtils.OpenPageMancal(b);
         await this.addNew.waitFor({ state: 'visible', timeout: 10000 });
     }
 
@@ -161,6 +163,7 @@ class RegulationItemPage {
         await this.save.click();
         await this.okEnd.waitFor({ state: 'visible', timeout: 5000 });
         await this.okEnd.click();
+        await this.sharedUtils.OpenPageMancal(b);
         await this.addNew.waitFor({ state: 'visible', timeout: 10000 });
     }
 

@@ -49,7 +49,7 @@ class DealerPage {
         this.accuracyOfData1 = this.page.locator('//*[contains(text(), "לא בוטל")]//..//input[@type="checkbox"]');
         this.accuracyOfData2 = this.page.locator('//*[contains(text(), "הפרטים ")]//..//input[@type="checkbox"]');
         this.saveSubmit = this.page.locator('//moh-button[@type="submit"]');
-        this.dialog = this.page.locator('//div[@role="dialog"]');
+        this.dialog = this.page.locator('//div[@role="dialog"] | //dialog');
         this.okEnd = this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').first();
         this.errorInvalidCharacter = this.page.locator('//*[contains(text(), "תו לא חוקי")]');
         this.errorIncompatiblePrefix = this.page.locator('//*[contains(text(), "התחילית לא תואמת לישות המשפטית")]');
@@ -102,6 +102,16 @@ class DealerPage {
     }
 
     // מתודת עזר המחליפה את ההתנהגות של web.isVisible() מ-Oxygen
+    async clickOrderButton() {
+        await this.orderButton.waitFor({ state: 'visible', timeout: 10000 });
+        await this.orderButton.scrollIntoViewIfNeeded();
+        try {
+            await this.orderButton.click({ timeout: 5000 });
+        } catch {
+            await this.orderButton.dispatchEvent('click');
+        }
+    }
+
     async isVisibleSafe(locatorOrString, timeout = 0) {
         const loc = typeof locatorOrString === 'string'
             ? this.page.locator(locatorOrString)
@@ -163,16 +173,14 @@ class DealerPage {
         console.log(" שם העסק: " + t[1]);
 
         try {
-            await this.orderButton.waitFor({ state: 'visible' });
-            // await this.page.waitForTimeout(5000);
-            await this.orderButton.click();
+            await this.clickOrderButton();
 
             if (await this.isVisibleSafe(this.dialog, 3000)) {
                 await this.okEnd.click();
             }
 
             // if (!(await this.isVisibleSafe(this.tamrukimButton1, 2000))) {
-            //     await this.orderButton.click();
+            //     await this.clickOrderButton();
             //     await this.page.waitForTimeout(2000);
             //     if (await this.isVisibleSafe(this.dialog, 3000)) {
             //         await this.okEnd.click();
@@ -287,8 +295,7 @@ class DealerPage {
         const randomId = await this.sharedUtils.GetRandomValidID();
         const t = await this.ReadIdName(randomId, name);
 
-        await this.orderButton.waitFor({ state: 'visible' });
-        await this.orderButton.click();
+        await this.clickOrderButton();
 
         if (await this.isVisibleSafe(this.dialog, 3000)) {
             await this.okEnd.click();
@@ -406,8 +413,7 @@ class DealerPage {
     async DealerAlreadyRegistered(name = "תאגיד קיים", idd = "518776767") {
         console.log("רישום עוסק בתמרוק תאגיד - בדיקת מספר זיהוי שכבר קיים במאגר");
         try {
-            await this.orderButton.waitFor({ state: 'visible' });
-            await this.orderButton.click();
+            await this.clickOrderButton();
 
             if (await this.isVisibleSafe(this.dialog, 3000)) {
                 await this.okEnd.click();
@@ -454,7 +460,7 @@ class DealerPage {
         let i = 0;
         console.log("מספר מזהה עסק: " + t[0] + " שם העסק: " + t[1]);
         try {
-            await this.orderButton.click();
+            await this.clickOrderButton();
 
             if (await this.isVisibleSafe(this.dialog, 3000)) {
                 await this.okEnd.click();
@@ -487,7 +493,7 @@ class DealerPage {
         let i = 0;
         console.log("מספר מזהה עסק: " + t[0] + " שם העסק: " + t[1]);
         try {
-            await this.orderButton.click();
+            await this.clickOrderButton();
 
             if (await this.isVisibleSafe(this.dialog, 3000)) {
                 await this.okEnd.click();
@@ -520,7 +526,7 @@ class DealerPage {
         console.log("מספר מזהה: " + t[0] + " שם העסק: " + t[1]);
         await this.page.waitForTimeout(5000);
 
-        await this.orderButton.click();
+        await this.clickOrderButton();
         if (await this.isVisibleSafe(this.dialog, 3000)) {
             await this.okEnd.click();
         }
@@ -579,8 +585,7 @@ class DealerPage {
         console.log("מספר מזהה עסק: " + t[0]);
         console.log(" שם העסק: " + t[1]);
         try {
-            await this.orderButton.waitFor({ state: 'visible' });
-            await this.orderButton.click();
+            await this.clickOrderButton();
             if (await this.isVisibleSafe(this.dialog, 3000)) {
                 await this.okEnd.click();
             }
@@ -662,8 +667,7 @@ class DealerPage {
         console.log("מספר מזהה עסק: " + t[0]);
         console.log(" שם העסק: " + t[1]);
         try {
-            await this.orderButton.waitFor({ state: 'visible' });
-            await this.orderButton.click();
+            await this.clickOrderButton();
             if (await this.isVisibleSafe(this.dialog, 3000)) {
                 await this.okEnd.click();
             }

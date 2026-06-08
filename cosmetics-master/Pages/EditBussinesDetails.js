@@ -17,7 +17,7 @@ class EditBussinesDetailsPage {
         this.businessEmail = this.page.locator('//input[@aria-label="דואר אלקטרוני"]');
         this.yesCorporation = this.page.locator('//*[text() = "תאגיד"]');
         this.noCorpuration = this.page.locator('//*[text() = "לא תאגיד"]');
-        this.saveButton = this.page.locator('//button[@type="button"]');
+        this.saveButton = this.page.locator('//button[normalize-space()="שמירה"]');
         this.okEnd = this.page.locator('//button[@id="confirm-btn"]');
     }
 

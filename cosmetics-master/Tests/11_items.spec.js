@@ -40,4 +40,5 @@ test.describe('בדיקות עמוד פריטים וסטטוסים', () => {
     test('אימות סכימות הסטטוסים בטבלת הפריטים בהשוואה לכרטיסיות', async ({ page }) => {
         await itemsPage.ValidateStatusSummary();
     });
+
 });

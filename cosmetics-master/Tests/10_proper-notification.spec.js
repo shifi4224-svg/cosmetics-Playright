@@ -60,6 +60,25 @@ test.describe('בדיקות הקמת נוטיפיקציה נאותה', () => {
         }
     });
 
+    test('הקמת נוטיפיקציה נאותה - בדיקת תווים מאופשרים ושמירה', async ({ page }) => {
+        test.setTimeout(3600000);
+        const uniqueId = Date.now().toString().slice(-4);
+        const itemNameH = `בדיקת תווים נאות ${uniqueId}`;
+        const itemNameE = `Proper Char Test ${uniqueId}`;
+
+        await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 1);
+        await properNotificationPage.CreateProperNotificationCharTest(itemNameH);
+
+        try {
+            const text = await regulationNotificationPage.dialog.textContent();
+            expect(text).toContain('נוטיפיקציה נשמרה בהצלחה');
+            await regulationNotificationPage.okEnd.click();
+        } catch (err) {
+            await page.pause();
+            throw err;
+        }
+    });
+
     test('הקמת נוטיפיקציה נאותה - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
         test.setTimeout(3600000); // שעה — הטסט בודק כל תו ומקסימום בכל שדה
         const uniqueId = Date.now().toString().slice(-4);

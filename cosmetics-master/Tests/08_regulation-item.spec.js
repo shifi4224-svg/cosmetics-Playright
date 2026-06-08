@@ -100,4 +100,22 @@ test.describe('בדיקות פריטים - הוספת פריט (RegulationItem)'
         const status = await regulationItemPage.GetItemStatus(itemNameH, "", true);
         expect(status).toContain("נדחה ע'י נציג אחראי");
     });
+
+    test('הוספת פריט רגיל - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
+        test.setTimeout(3600000);
+        const uniqueId = Date.now().toString().slice(-4);
+        const itemNameH = `בדיקת תווים פריט ${uniqueId}`;
+        const itemNameE = `Char Max Item ${uniqueId}`;
+
+        await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 0);
+    });
+
+    test('הוספת פריט נאות - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
+        test.setTimeout(3600000);
+        const uniqueId = Date.now().toString().slice(-4);
+        const itemNameH = `בדיקת תווים פריט נאות ${uniqueId}`;
+        const itemNameE = `Char Max Proper Item ${uniqueId}`;
+
+        await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 1);
+    });
 });

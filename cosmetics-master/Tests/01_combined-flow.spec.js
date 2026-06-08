@@ -15,7 +15,7 @@ const ChageActivityBussinesPage = require('../Pages/ChageActivityBussines');
 const EditBussinesDetailsPage = require('../Pages/EditBussinesDetails');
 const UpdateProperImporterPage = require('../Pages/UpdateProperImporter');
 
-test.describe('טסט משולב - רישום 30 עוסקים והקמת 200 פריטים רגילים ו-200 נאות לכל עוסק', () => {
+test.describe('טסט משולב - הרצות תהליכים', () => {
     let po;
     let env;
     let dealerPage;
@@ -85,6 +85,116 @@ test.describe('טסט משולב - רישום 30 עוסקים והקמת 200 פ�
 
         // התחברות לסביבת פיתוח פעם אחת בתחילת הטסט
         await po.loginPage.LoginDev();
+    });
+
+    test('תסריט שפיות - כל התהליכים הבסיסיים', async ({ page }) => {
+        test.setTimeout(36000000);
+
+        const properNotificationPage = new (require('../Pages/properNotification'))(page, po, env, console);
+        const regulationTaagidRP = new (require('../Pages/RegulationTaagidRP'))(page, po, env, console);
+        const editBussinesDetailsPage = new EditBussinesDetailsPage(page, po, env, console);
+        const updateProperImporterPage = new UpdateProperImporterPage(page, po, env, console);
+        po.regulationNotification = regulationNotificationPage;
+
+        // --- 1: רישום עוסק בתמרוק ---
+        console.log('--- שלב 1: רישום עוסק בתמרוק ---');
+        const randomId = await po.GetRandomValidID();
+        const dealerName = `תאגיד שפיות ${Date.now().toString().slice(-4)}`;
+        await dealerPage.RegulationDealerBusiness(false, 1, dealerName, randomId);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 30000 });
+        let text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+
+        // --- 2: פעולות פרטי עסק ---
+        console.log('--- שלב 2: שינוי פעילות ---');
+        await chageActivityBussinesPage.ChangeActivity(["יבואן נאות"]);
+
+        console.log('--- שלב 2: עריכת פרטי עסק ---');
+        await page.goto(env.url);
+        await editBussinesDetailsPage.UpdateBusinessDetails(0, `${dealerName} מעודכן`, process.env.TELEFON || "0501234567", process.env.EMAIL || "test@test.com");
+
+        console.log('--- שלב 2: עדכון תנאי יצור נאותים ---');
+        await page.goto(env.url);
+        await updateProperImporterPage.Update();
+
+        // --- 3: רישום תאגיד נציג אחראי ---
+        console.log('--- שלב 3: רישום תאגיד נציג אחראי ---');
+        await page.goto(env.url);
+        await regulationTaagidRP.LoginToDeaker(false, "תאגיד שפיות נציג");
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 30000 });
+        text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+
+        // --- 4: נציג אחראי מקושר לתאגיד ---
+        console.log('--- שלב 4: נציג אחראי מקושר לתאגיד ---');
+        await page.goto(env.url);
+        await page.waitForTimeout(3000);
+        await regulationRPPage.RegulationToCorpuration("", false);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 30000 });
+        text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+
+        // --- 5: נציג אחראי מקושר ליצרן/יבואן ---
+        console.log('--- שלב 5: נציג אחראי מקושר ליצרן/יבואן ---');
+        await page.goto(env.url);
+        await page.waitForTimeout(3000);
+        await regulationRPPage.RegulationToBusiness("", false);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 30000 });
+        text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+
+        // --- 6: נציג אחראי בודד ---
+        console.log('--- שלב 6: נציג אחראי בודד ---');
+        await page.goto(env.url);
+        await page.waitForTimeout(3000);
+        await regulationRPPage.RegulationToRP("", false);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 30000 });
+        text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+
+        // --- 7: פריט רגיל + נוטיפיקציה רגילה ---
+        console.log('--- שלב 7: פריט רגיל ---');
+        const uniqueId = Date.now().toString().slice(-4);
+        const itemNameH = `פריט שפיות ${uniqueId}`;
+        const itemNameE = `Sanity Item ${uniqueId}`;
+        await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
+
+        console.log('--- שלב 7: נוטיפיקציה רגילה ---');
+        await regulationNotificationPage.CreateNotificationSanity(itemNameH, false);
+        try {
+            const notifText = await regulationNotificationPage.dialog.textContent();
+            expect(notifText).toContain('נוטיפיקציה נשמרה בהצלחה');
+            await regulationNotificationPage.okEnd.click();
+        } catch (err) {
+            await page.pause();
+            throw err;
+        }
+
+        // --- 8: פריט נאות + נוטיפיקציה נאותה ---
+        console.log('--- שלב 8: פריט נאות ---');
+        const properItemH = `פריט נאות שפיות ${uniqueId}`;
+        const properItemE = `Sanity Proper ${uniqueId}`;
+        await regulationItemPage.AddItem(properItemH, properItemE, 1, false);
+        await page.reload();
+        await page.waitForTimeout(3000);
+
+        console.log('--- שלב 8: נוטיפיקציה נאותה ---');
+        await properNotificationPage.CreateProperNotification(false);
+        try {
+            const properNotifText = await regulationNotificationPage.dialog.textContent();
+            expect(properNotifText).toContain('נוטיפיקציה נשמרה בהצלחה');
+            await regulationNotificationPage.okEnd.click();
+        } catch (err) {
+            await page.pause();
+            throw err;
+        }
+
+        console.log('✅ תסריט שפיות הושלם בהצלחה!');
     });
 
     test('תהליך פרטי עסק - רישום תאגיד ופעולות פרטי עסק', async ({ page }) => {
@@ -336,4 +446,5 @@ test.describe('טסט משולב - רישום 30 עוסקים והקמת 200 פ�
 
         console.log('הסתיימה הקמת 600 הפריטים');
     });
+
 });

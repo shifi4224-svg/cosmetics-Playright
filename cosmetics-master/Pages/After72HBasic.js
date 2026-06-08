@@ -125,6 +125,47 @@ class After72HBasicPage {
         }
     }
 
+    async checkAllFieldsEditable(expectedEditable) {
+        const fields = [
+            this.po.regulationNotification.manufacturerName,
+            this.po.regulationNotification.category1,
+            this.po.regulationNotification.category2,
+            this.po.regulationNotification.washable,
+            this.po.regulationNotification.granules,
+            this.po.regulationNotification.phases,
+            this.po.regulationNotification.physicochemical,
+            this.po.regulationNotification.packType,
+            this.po.regulationNotification.instructionsForUse,
+            this.po.regulationNotification.exp,
+            this.po.regulationNotification.panelOther,
+            this.po.regulationNotification.populationTitle,
+            this.po.regulationNotification.distributionStatus,
+        ];
+
+        let passed = 0;
+        let failed = 0;
+
+        for (const field of fields) {
+            try {
+                const loc = (typeof field === 'string' ? this.page.locator(field) : field).first();
+                await loc.waitFor({ state: 'attached', timeout: 2000 });
+                const isEditable = await loc.isEditable().catch(() => false);
+
+                if (isEditable === expectedEditable) {
+                    passed++;
+                } else {
+                    failed++;
+                    this.log.info(`❌ שדה ${expectedEditable ? 'צריך להיות פתוח' : 'צריך להיות נעול'} אבל ${isEditable ? 'פתוח' : 'נעול'}: ${typeof field === 'string' ? field : 'locator'}`);
+                }
+            } catch (e) {
+                this.log.warn(`שדה לא נמצא: ${e.message}`);
+            }
+        }
+
+        this.log.info(`✅ עברו: ${passed} | ❌ נכשלו: ${failed}`);
+        return failed === 0;
+    }
+
     async ClickOnForm() {
         try {
             await this.page.waitForTimeout(2000);

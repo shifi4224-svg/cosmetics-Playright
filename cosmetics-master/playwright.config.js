@@ -22,7 +22,7 @@ module.exports = defineConfig({
       name: 'chromium',
       use: { browserName: 'chromium' },
       testMatch: [
-        '01_combined-flow.spec.js',
+        '**/01_combined-flow.spec.js',
         '**/02_dealer-registration.spec.js',
         '**/03_rp-registration.spec.js',
         '**/04_change-activity-business.spec.js',
@@ -33,6 +33,7 @@ module.exports = defineConfig({
         '**/09_regulation-notification.spec.js',
         '**/10_proper-notification.spec.js',
         '**/11_items.spec.js',
+        '**/12_after72h.spec.js',
       ]
     }
   ]

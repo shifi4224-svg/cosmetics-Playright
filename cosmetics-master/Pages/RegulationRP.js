@@ -80,8 +80,8 @@ class RegulationRPPage {
             const result = await this.sharedUtils.ReadFile(oldfilepath);
             corpurationName = result[0].trim();
         }
-        await this.orderButton.waitFor({ state: 'visible', timeout: 10000 });
-        await this.orderButton.click();
+        await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
         await this.rpIshKesher3.waitFor({ state: 'visible', timeout: 10000 });
         await this.rpIshKesher3.click();
         await this.yesCorporation.click();
@@ -106,12 +106,12 @@ class RegulationRPPage {
             const result = await this.sharedUtils.ReadFile(oldfilepath);
             businessName = result[0].trim(); // ← שורה ראשונה בלי רווחים
         }
-        await this.orderButton.waitFor({ state: 'visible', timeout: 10000 });
-        await this.orderButton.click();
+        await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
         if (await this.isVisibleSafe(this.dialog, 2000)) {
             await this.okEnd.click();
-            await this.orderButton.waitFor({ state: 'visible', timeout: 10000 });
-            await this.orderButton.click();
+            await this.orderButton.scrollIntoViewIfNeeded();
+            try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
         }
         await this.rpIshKesher3.waitFor({ state: 'visible', timeout: 10000 });
         await this.rpIshKesher3.click();
@@ -136,8 +136,8 @@ class RegulationRPPage {
         const oldfilepath = this.po.dataFolder + '\\linked.txt';
         const t = await this.sharedUtils.ReadFileUpdate(oldfilepath);
         let businessName = t[1] + t[2] + name;
-        await this.orderButton.waitFor({ state: 'visible', timeout: 10000 });
-        await this.orderButton.click();
+        await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
         await this.rpIshKesher3.waitFor({ state: 'visible', timeout: 10000 });
         await this.rpIshKesher3.click();
         await this.noBusiness.click();
@@ -173,10 +173,12 @@ class RegulationRPPage {
         const oldfilepath = this.po.dataFolder + '\\linked.txt';
         const t = await this.sharedUtils.ReadFileUpdate(oldfilepath);
 
-        await this.orderButton.click();
+        await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
         if (await this.isVisibleSafe(this.dialog, 2000)) {
             await this.okEnd.click();
-            await this.orderButton.click();
+            await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
         }
         await this.rpIshKesher3.click();
         await this.noBusiness.click();
@@ -224,7 +226,8 @@ class RegulationRPPage {
             const result = await this.sharedUtils.ReadFile(oldfilepath);
             corpurationName = result[0].trim(); // ← שורה ראשונה בלי רווחים
         }
-        await this.orderButton.click();
+        await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
         await this.rpIshKesher3.click();
         await locator.click();
         await this.corpuration.click();
