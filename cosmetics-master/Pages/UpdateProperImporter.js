@@ -38,12 +38,19 @@ class UpdateProperImporterPage {
             await this.accuracyOfData2.click();
             await this.saveButton.click();
             
-            await this.regulationDealer.dialog.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+            await this.regulationDealer.dialog.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
             if (await this.regulationDealer.dialog.isVisible()) {
                 let textDialog = await this.regulationDealer.dialog.textContent();
                 this.log.info(textDialog);
+                if (textDialog.includes('בהצלחה')) {
+                    this.log.warn("נשמר");
+                } else if (textDialog.includes('אנא נסה שוב')) {
+                    throw new Error('TryAgain: ' + textDialog);
+                } else {
+                    throw new Error('UnexpectedDialog: ' + textDialog);
+                }
             }
-            
+
             await this.okEnd.click();
         } catch (err) {
             this.log.error("Error in Update Proper Importer: ", err);

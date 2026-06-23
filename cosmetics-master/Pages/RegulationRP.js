@@ -91,6 +91,8 @@ class RegulationRPPage {
         if (flug) {
             await this.address.RPaddress();
             await this.files.TestFileTypeValidation();
+            await this.files.TestFileNameValidation("", "קובץ נציג אחראי תאגיד", "Doc1.pdf");
+            await this.files.TestFileNameMaxLength("", "קובץ נציג אחראי תאגיד", "Doc1.pdf");
         } else {
             await this.address.RPaddressFast();
         }
@@ -124,6 +126,8 @@ class RegulationRPPage {
         if (flug) {
             await this.address.RPaddress();
             await this.files.TestFileTypeValidation();
+            await this.files.TestFileNameValidation("", "קובץ נציג אחראי מקושר לעסק", "Doc1.pdf");
+            await this.files.TestFileNameMaxLength("", "קובץ נציג אחראי מקושר לעסק", "Doc1.pdf");
         } else {
             await this.address.RPaddressFast();
         }
@@ -154,6 +158,8 @@ class RegulationRPPage {
         if (flug) {
             await this.address.RPaddress();
             await this.files.TestFileTypeValidation();
+            await this.files.TestFileNameValidation("", "קובץ נציג אחראי בודד", "Doc1.pdf");
+            await this.files.TestFileNameMaxLength("", "קובץ נציג אחראי בודד", "Doc1.pdf");
         } else {
             await this.address.RPaddressFast();
         }

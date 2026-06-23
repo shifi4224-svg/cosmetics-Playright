@@ -97,6 +97,8 @@ class RegulationNotificationPage {
         this.colorWhite = this.page.locator('//div[@style="background: rgb(255, 255, 255);"]');
         this.vehicleType = this.page.locator('//input[@aria-label="סוג הרכב *"]');
         this.vehicleTypeName = this.page.locator('//span[text()=" פורמולה מדויקת "]');
+        this.vehicleTypeNameRange = this.page.locator('//span[text()=" פורמולה טווחים "]');
+        this.rangeFormulaConfirm = this.page.locator('//input[@aria-label="אני מאשר/ת כי פורמולת הטווחים נבדקה על ידי וכוללת את טווח הריכוז של המרכיבים (Range Formulation) בהתאם למפורט בפרק ה\': הודעה בדבר שיווק של תמרוק, סעיף 15 (4) בתקנות הרוקחים (תמרוקים), התשפ״ג – 2023"]');
         this.addShade = this.page.locator('//moh-button[@textkey="addShade"]');
         this.closeButton = this.page.locator('//moh-button[@textkey="סגור"]');
 
@@ -142,11 +144,13 @@ class RegulationNotificationPage {
         await this.selectFileKit.click();
         if (flug) {
             await this.filesPage.TestFileTypeValidation(this.typeFileKit, "ערכה");
+            await this.filesPage.TestFileNameValidation(this.typeFileKit, "ערכה", "Doc1.pdf");
+            await this.filesPage.TestFileNameMaxLength(this.typeFileKit, "ערכה", "Doc1.pdf");
         }
         await this.filesPage.AtachFile(this.typeFileKit, "Doc1.pdf", "ערכה");
     }
 
-    async AddXSades(totalShades = 150, shadesWithFiles = 20, s = "ירוק") {
+    async AddXSades(totalShades = 150, shadesWithFiles = 20, s = "ירוק", flug = true, isProper = false) {
         const colors = [
             { name: "לבן", rgb: "rgb(255, 255, 255)", xpath: "//div[@style='background: rgb(255, 255, 255);']", xPath2: false },
             { name: "כתום", rgb: "rgb(0, 0, 0)", xpath: "//div[@style='background: rgb(255, 138, 101);']", xPath2: "//div[@style='background: rgb(255, 87, 34);']" },
@@ -162,8 +166,11 @@ class RegulationNotificationPage {
             const shadeName = `${currentColor.name} ${Math.floor(i / colors.length) + 1}`;
 
             if (i < shadesWithFiles) {
-                await this.selectFileShades.click();
-                await this.filesPage.TestFileTypeValidation(this.typeFileShades, "גוון");
+                if (flug) {
+                    await this.filesPage.TestFileTypeValidation(this.typeFileShades, "גוון");
+                    await this.filesPage.TestFileNameValidation(this.typeFileShades, "גוון", "Doc1.pdf");
+                    await this.filesPage.TestFileNameMaxLength(this.typeFileShades, "גוון", "Doc1.pdf");
+                }
                 await this.filesPage.AtachFile(this.typeFileShades, "Doc1.pdf", "גוון");
             }
 
@@ -173,9 +180,17 @@ class RegulationNotificationPage {
                 await this.page.locator(currentColor.xPath2).click();
             }
 
-            await this.vehicleType.click();
-            await this.vehicleTypeName.click();
+            if (!isProper) {
+                await this.vehicleType.click();
+                await this.vehicleTypeNameRange.click();
+            }
             await this.addShade.click();
+
+            // אם מופיעה הצהרת אישור פורמולת טווחים — לחץ עליה ואז על אישור
+            if (await this.sharedUtils.isVisibleSafe(this.rangeFormulaConfirm, 2000)) {
+                await this.rangeFormulaConfirm.click();
+                await this.page.locator('//button[normalize-space()="אישור"] | //button[normalize-space()="OK"]').first().click();
+            }
 
             this.log.info(`נוסף גוון ${i + 1}/${totalShades}: ${shadeName}`);
         }
@@ -192,6 +207,8 @@ class RegulationNotificationPage {
             await this.shadesName.fill(s);
             if (flug) {
                 await this.filesPage.TestFileTypeValidation(this.typeFileShades, "גוון");
+                await this.filesPage.TestFileNameValidation(this.typeFileShades, "גוון", "Doc1.pdf");
+                await this.filesPage.TestFileNameMaxLength(this.typeFileShades, "גוון", "Doc1.pdf");
             }
             await this.filesPage.AtachFile(this.typeFileShades, "Doc1.pdf", "גוון");
             await this.selectColor.click();
@@ -282,7 +299,11 @@ class RegulationNotificationPage {
     async Files(flug = true) {
         if (flug) {
             await this.filesPage.TestFileTypeValidation(this.cosmeticsPictures, "תמונות תמרוק");
+            await this.filesPage.TestFileNameValidation(this.cosmeticsPictures, "תמונות תמרוק", "Doc1.pdf");
+            await this.filesPage.TestFileNameMaxLength(this.cosmeticsPictures, "תמונות תמרוק", "Doc1.pdf");
             await this.filesPage.TestFileTypeValidation(this.cosmeticsLabel, "תווית תמרוק");
+            await this.filesPage.TestFileNameValidation(this.cosmeticsLabel, "תווית תמרוק", "Doc1.pdf");
+            await this.filesPage.TestFileNameMaxLength(this.cosmeticsLabel, "תווית תמרוק", "Doc1.pdf");
         }
         await this.filesPage.AtachFile(this.cosmeticsPictures);
         await this.filesPage.AtachFile(this.cosmeticsLabel);

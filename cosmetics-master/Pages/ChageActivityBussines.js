@@ -96,9 +96,15 @@ class ChageActivityBussinesPage {
             if (await this.dialog.isVisible()) {
                 let textDialog = await this.dialog.textContent();
                 this.log.info(textDialog);
+                if (textDialog.includes('בהצלחה')) {
+                    this.log.warn("נשמר");
+                } else if (textDialog.includes('אנא נסה שוב')) {
+                    throw new Error('TryAgain: ' + textDialog);
+                } else {
+                    throw new Error('UnexpectedDialog: ' + textDialog);
+                }
             }
             await this.okEnd.click();
-            this.log.warn("נשמר");
             await this.page.waitForTimeout(2000);
         } catch (err) {
             this.log.error("Error in Change Activity Bussines: ", err);
