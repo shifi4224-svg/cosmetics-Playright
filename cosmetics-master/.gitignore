@@ -4,3 +4,4 @@ playwright-report/
 .env
 *.lnk
 desktop.ini
+node_modules/
