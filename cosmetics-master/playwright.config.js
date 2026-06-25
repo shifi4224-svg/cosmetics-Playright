@@ -36,6 +36,9 @@ module.exports = defineConfig({
         '**/12_after72h.spec.js',
         '**/13_tipulit-dealer.spec.js',
         '**/14_shades.spec.js',
+        '**/15_general-request.spec.js',
+        '**/16_cancel-notification.spec.js',
+        '**/17_update-proper-importer.spec.js',
       ]
     }
   ]
