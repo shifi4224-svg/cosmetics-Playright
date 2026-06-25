@@ -39,6 +39,7 @@ module.exports = defineConfig({
         '**/15_general-request.spec.js',
         '**/16_cancel-notification.spec.js',
         '**/17_update-proper-importer.spec.js',
+        '**/18_side-effect.spec.js',
       ]
     }
   ]
