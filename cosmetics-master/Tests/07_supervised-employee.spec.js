@@ -40,6 +40,24 @@ test.describe('בדיקות עובד ממונה (איש קשר)', () => {
         await loginPage.LoginDev();
     });
 
+    test('עוסק בתמרוק תאגיד - כפתור הוספת עובד ממונה מוצג', async ({ page }) => {
+        await sharedUtils.OpenPageMancal("", true);
+        await page.locator('//a[contains(text(),"פרטי העסק")]').waitFor({ state: 'visible' });
+        await page.locator('//a[contains(text(),"פרטי העסק")]').click();
+        await page.locator('//span[contains(text(),"פעולות נוספות")]').waitFor({ state: 'visible' });
+        await page.locator('//span[contains(text(),"פעולות נוספות")]').click();
+        await expect(supervisedEmploeePage.addSupervisedEmployee).toBeVisible();
+    });
+
+    test('עוסק בתמרוק לא תאגיד - כפתור הוספת עובד ממונה לא מוצג', async ({ page }) => {
+        await sharedUtils.OpenPageMancal("", false);
+        await page.locator('//a[contains(text(),"פרטי העסק")]').waitFor({ state: 'visible' });
+        await page.locator('//a[contains(text(),"פרטי העסק")]').click();
+        await page.locator('//span[contains(text(),"פעולות נוספות")]').waitFor({ state: 'visible' });
+        await page.locator('//span[contains(text(),"פעולות נוספות")]').click();
+        await expect(supervisedEmploeePage.addSupervisedEmployee).not.toBeVisible();
+    });
+
     test('הוספת עובד ממונה חדש', async ({ page }) => {
         await supervisedEmploeePage.AddSupervisedEmployee("ישראל", "ישראלי", "123456782", "0501234567", "israel@test.com");
     });
@@ -50,5 +68,10 @@ test.describe('בדיקות עובד ממונה (איש קשר)', () => {
 
     test('ניתוק איש קשר (עובד ממונה)', async ({ page }) => {
         await supervisedEmploeePage.DisconnectSupervisedEmployee();
+    });
+
+    test('הוספת עובד ממונה - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
+        test.setTimeout(3600000);
+        await supervisedEmploeePage.AddSupervisedEmployeeCharTest("חיים", "כהן", "123456782", "0533212321");
     });
 });

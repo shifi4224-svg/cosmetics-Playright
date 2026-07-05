@@ -134,6 +134,39 @@ class AddressPage {
         await this.publicTelefon.first().fill(this.env.telefon);
         await this.publicEmail.first().fill(this.env.email);
     }
+
+    // פרטי התקשרות ראשיים בלבד — ללא שום שדה פרסום (לבדיקת ולידציה)
+    async RPaddressNoPublic() {
+        await this.telefon.first().fill(this.env.telefon);
+        await this.email.first().fill(this.env.email);
+    }
+
+    // פרטי התקשרות ראשיים + טלפון לפרסום בלבד
+    async RPaddressPublicPhoneOnly() {
+        await this.telefon.first().fill(this.env.telefon);
+        await this.email.first().fill(this.env.email);
+        await this.publicTelefon.first().fill(this.env.telefon);
+    }
+
+    // פרטי התקשרות ראשיים + מייל לפרסום בלבד
+    async RPaddressPublicEmailOnly() {
+        await this.telefon.first().fill(this.env.telefon);
+        await this.email.first().fill(this.env.email);
+        await this.publicEmail.first().fill(this.env.email);
+    }
+
+    // פרטי התקשרות ראשיים + כתובת לפרסום בלבד (ישוב + רחוב + מספר בית)
+    async RPaddressPublicAddressOnly() {
+        await this.telefon.first().fill(this.env.telefon);
+        await this.email.first().fill(this.env.email);
+        await this.city.first().fill("שחר");
+        await this.nameCity.first().waitFor({ state: 'visible', timeout: 5000 });
+        await this.nameCity.first().click();
+        await this.street.first().fill("הבציר");
+        await this.nameStreet.first().waitFor({ state: 'visible', timeout: 5000 });
+        await this.nameStreet.first().click();
+        await this.houseNumber.first().fill(this.env.houseNumber);
+    }
 }
 
 module.exports = AddressPage;

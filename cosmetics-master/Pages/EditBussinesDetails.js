@@ -35,8 +35,7 @@ class EditBussinesDetailsPage {
             
             await this.businessName.fill(name);
             
-            const oldfilepath = this.po.dataFolder + '\\RP.txt';
-            await this.sharedUtils.WriteFile(oldfilepath, name);
+            this.sharedUtils.WriteBusiness('taagid', name);
             
             await this.businessPhone.fill(phone);
             await this.businessEmail.fill(email);

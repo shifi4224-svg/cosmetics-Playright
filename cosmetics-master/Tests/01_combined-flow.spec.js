@@ -474,7 +474,12 @@ test.describe('טסט משולב - הרצות תהליכים', () => {
                     // אישור דיאלוג ההצלחה "הפריט אושר בהצלחה"
                     try {
                         await dealerPage.dialog.waitFor({ state: 'visible', timeout: 5000 });
-                        await dealerPage.okEnd.click();
+                        const successOkBtn = page.locator('//button[@class="main-button sm"]');
+                        if (await successOkBtn.isVisible().catch(() => false)) {
+                            await successOkBtn.click();
+                        } else {
+                            await dealerPage.okEnd.click();
+                        }
                     } catch (e) {}
                     
                     approvedCount++;

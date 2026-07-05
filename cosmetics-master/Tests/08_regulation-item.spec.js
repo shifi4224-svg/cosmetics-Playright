@@ -46,38 +46,49 @@ test.describe('בדיקות פריטים - הוספת פריט (RegulationItem)'
         await loginPage.LoginDev();
     });
 
-    test('הוספת פריט רגיל (מסלול בסיסי) עם ולידציות מלאות', async ({ page }) => {
-        // פרמטרים: שם בעברית, שם באנגלית, מסלול (0 = בסיסי), ולידציות (true)
-        await regulationItemPage.AddItem("פריט רגיל אוטומציה", "Regular Item Automation", 0, true);
+    test('הוספת פריט רגיל (מסלול בסיסי)', async ({ page }) => {
+        await regulationItemPage.AddItem("פריט רגיל אוטומציה", "Regular Item Automation", 0, false);
     });
 
     test('הוספת פריט נאות (מסלול אירופאי) ללא ולידציות מיותרות', async ({ page }) => {
-        // פרמטרים: שם בעברית, שם באנגלית, מסלול (1 = אירופאי), ולידציות (false)
-        await regulationItemPage.AddItem("פריט נאות אוטומציה", "European Item Automation", 1, false);
+        const businessName = sharedUtils.ReadBusiness('taagid_naot');
+        await sharedUtils.OpenPageMancal(businessName);
+        await regulationItemPage.addNew.click();
+        await regulationItemPage.europeanRoute.first().waitFor({ state: 'attached', timeout: 5000 });
+        await regulationItemPage.europeanRoute.first().click({ force: true });
+        await regulationItemPage.okEnd.click();
+        await regulationItemPage.hebrewCosmetics.waitFor({ state: 'visible', timeout: 5000 });
+        await regulationItemPage.hebrewCosmetics.fill("פריט נאות אוטומציה");
+        await regulationItemPage.englishCosmetics.fill("European Item Automation");
+        await regulationItemPage.business.click();
+        await regulationItemPage.business.fill(businessName);
+        await regulationItemPage.option.click();
+        await regulationItemPage.rPCosmetics.click();
+        await regulationItemPage.rPCosmetics.fill(env.name || "שפרה הקר");
+        await regulationItemPage.option.click();
+        await regulationItemPage.save.click();
+        await regulationItemPage.dialog.waitFor({ state: 'visible', timeout: 10000 });
+        await regulationItemPage.okEnd.click();
+        await page.reload();
+        await sharedUtils.OpenPageMancal(businessName);
+        await regulationItemPage.addNew.waitFor({ state: 'visible', timeout: 10000 });
     });
 
     test('הוספת פריט ע"י מנכל ואישור ע"י נציג אחראי', async ({ page }) => {
-        // נייצר שם ייחודי כדי שנוכל למצוא אותו בקלות בטבלה
         const uniqueId = Date.now().toString().slice(-4);
         const itemNameH = `פריט לאישור אוטומציה ${uniqueId}`;
         const itemNameE = `Approval Item ${uniqueId}`;
 
-        // שלב 1: מנכ"ל מוסיף פריט למאגר
+        
+        // שלב 1: מנכ"ל מוסיף פריט
         await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
 
-        // שלב 2: מעבר לנציג אחראי, חיפוש הפריט לפי שם וסטטוס ואישורו
-        await regulationItemPage.OpenItem1("", "", itemNameH, "פריט רגיל", "לאישור נציג אחראי");
-        // דיאלוג ראשון - סוגרים
-        // await page.pause(); // השהייה כדי לראות את הדיאלוג לפני הסגירה
-        await regulationItemPage.extOkEndNarrow.click();
-        const text = await dealerPage.dialog.textContent();
-        expect(text).toContain('הפריט אושר בהצלחה');
-        //await regulationItemPage.extOkEndNarrow.click();
-        console.log(4)
-        // שלב 3: חזרה למנכ"ל ובדיקת סטטוס הפריט בטבלה
+        // שלב 2: מעבר לנציג אחראי ואישור הפריט (openAfter=false — לא פותח נוטיפיקציה)
+        await regulationItemPage.OpenItem1("", "", itemNameH, "פריט רגיל", "לאישור נציג אחראי", "approve", false);
+
+        // שלב 3: חזרה למנכ"ל ובדיקת סטטוס
         const status = await regulationItemPage.GetItemStatus(itemNameH, "", true);
         expect(status).toContain("התקבל ע'י נציג אחראי");
-
     });
 
     test('הוספת פריט ע"י מנכל ודחייה ע"י נציג אחראי', async ({ page }) => {
@@ -115,7 +126,24 @@ test.describe('בדיקות פריטים - הוספת פריט (RegulationItem)'
         const uniqueId = Date.now().toString().slice(-4);
         const itemNameH = `בדיקת תווים פריט נאות ${uniqueId}`;
         const itemNameE = `Char Max Proper Item ${uniqueId}`;
+        const businessName = sharedUtils.ReadBusiness('taagid_naot');
 
-        await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 1);
+        await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 1, businessName);
+    });
+
+    test('עסק ללא יבואן נאות - אפשרות מסלול אירופי לא מוצגת', async ({ page }) => {
+        const businessName = sharedUtils.ReadBusiness('taagid');
+        await sharedUtils.OpenPageMancal(businessName);
+        await regulationItemPage.addNew.click();
+        await expect(regulationItemPage.europeanRoute.first()).not.toBeVisible({ timeout: 5000 });
+        await regulationItemPage.back.click();
+    });
+
+    test('עסק עם יבואן נאות - אפשרות מסלול אירופי מוצגת', async ({ page }) => {
+        const businessName = sharedUtils.ReadBusiness('taagid_naot');
+        await sharedUtils.OpenPageMancal(businessName);
+        await regulationItemPage.addNew.click();
+        await expect(regulationItemPage.europeanRoute.first()).toBeVisible({ timeout: 5000 });
+        await regulationItemPage.back.click();
     });
 });

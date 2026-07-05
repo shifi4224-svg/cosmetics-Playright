@@ -55,6 +55,21 @@ class SharedUtils {
         }
     }
 
+    // קריאת שם עסק מתוך businesses.json לפי מפתח
+    ReadBusiness(key) {
+        const filePath = this.po.dataFolder + '\\businesses.json';
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        return data[key] || '';
+    }
+
+    // כתיבת שם עסק ל-businesses.json לפי מפתח
+    WriteBusiness(key, value) {
+        const filePath = this.po.dataFolder + '\\businesses.json';
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        data[key] = value;
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    }
+
     async CharactersFile() {
         const filePath = this.po.dataFolder + '\\characters.txt';
         return fs.readFileSync(filePath, 'utf8');
@@ -445,17 +460,15 @@ class SharedUtils {
         }
     }
 
-    async EzerOpen() {
-        let oldfilepath = this.po.dataFolder + '\\RP.txt';
-        let bussines = await this.ReadFile(oldfilepath);
-        return bussines[0] || bussines;
+    async EzerOpen(taagid = true) {
+        return this.ReadBusiness(taagid ? 'taagid' : 'lo_taagid');
     }
 
-    async OpenPageMancal(b = "") {
+    async OpenPageMancal(b = "", taagid = true) {
         let bussines = "";
         let code = "";
         if (b === "") {
-            bussines = await this.EzerOpen();
+            bussines = await this.EzerOpen(taagid);
         } else {
             bussines = b;
         }
@@ -468,18 +481,18 @@ class SharedUtils {
             await this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').click();
         }
         await this.page.waitForTimeout(500);
-        
+
         if (!(await this.isVisibleSafe(code, 2000))) {
-            bussines = await this.EzerOpen();
+            bussines = await this.EzerOpen(taagid);
             code = `//span[text() ="${bussines}"]`;
         }
         await this.page.locator(code).click();
         return bussines;
     }
 
-    async OpenDetails(locatorStr) {
+    async OpenDetails(locatorStr, taagid = true) {
         try {
-            await this.OpenPageMancal();
+            await this.OpenPageMancal("", taagid);
             await this.page.locator('//a[contains(text(),"פרטי העסק")]').waitFor({ state: 'visible' });
             await this.page.waitForTimeout(2000);
             await this.page.locator('//a[contains(text(),"פרטי העסק")]').click();

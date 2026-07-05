@@ -81,6 +81,13 @@ test.describe('רישום עוסק בתמרוק', () => {
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
     });
+    test('רישום עוסק בתמרוק תאגיד עם יבואן, יבואן נאות ונציג אחראי', async ({ page }) => {
+        await dealerPage.RegulationDealerBusinessNaot();
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
+        const text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+    });
     test('רישום עוסק בתמרוק לא תאגיד', async ({ page }) => {
         await dealerPage.RegulationDealerBusiness(false, 0);
         await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
@@ -149,18 +156,17 @@ test.describe('רישום עוסק בתמרוק', () => {
         await expect(dealerPage.errorManu1).toBeVisible();
         const errorText1 = await dealerPage.errorManu1.textContent();
         expect(errorText1).toContain('עבור ייצור תמרוקים נדרש רישיון עסק לעוסק');
-        await dealerPage.okEnd.click();
         await dealerPage.ManufacturerDealer(2);
         await expect(dealerPage.errorManu2).toBeVisible();
         const errorText2 = await dealerPage.errorManu2.textContent();
         expect(errorText2).toContain('עליך לעדכן כתובת מסוג אתר יצור');
-        await dealerPage.okEnd.click();
         await dealerPage.ManufacturerDealer(3);
         await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
         const text = await dealerPage.dialog.textContent();
         expect(text).toContain('בהצלחה');
         await dealerPage.okEnd.click();
     });
+
     test('רישום עוסק בתמרוק - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
         test.setTimeout(3600000); // שעה — הטסט בודק כל תו בכל שדה
         await dealerPage.RegulationDealerBusinessCharTest(0, "בדיקת תווים");

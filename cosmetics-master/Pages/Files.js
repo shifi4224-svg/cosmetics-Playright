@@ -9,8 +9,11 @@ class FilesPage {
 
         // לוקטורים שקשורים לקבצים - מוגדרים כאן כדי למנוע תלות מעגלית במחלקות אחרות
         this.errorFileBug = this.page.locator('//span[contains(text(),"העלאת קובץ נכשלה")]');
-        this.delFile = this.page.locator('//i[@class="moh-icon delete"]');
+        this.delFile = this.page.locator('//i[@class="moh-icon delete"] | //button[normalize-space()="הסרה"]');
         this.errorFile = this.page.locator('//span[contains(text(), "לא נתמך")]');
+        this.errorFileSize = this.page.locator('//span[contains(text(), "עברת את הגודל המירבי המותר 10 MB")]');
+        this.errorFileName = this.page.locator('//span[contains(text(), "לא ניתן להעלות קובץ בשם זה")]');
+        this.errorFileCount = this.page.locator('//span[contains(text(), "הינך מורשה לעלות עד 1 קבצים")]');
         this.selectFileShades = this.page.locator('//app-notification-shades//div[@class="upload-button"]');
         this.selectFileKit = this.page.locator('//app-notification-kits//div[@class="upload-button"]');
         this.closeButton = this.page.locator('//moh-button[@textkey="סגור"]');
@@ -102,8 +105,9 @@ class FilesPage {
 
             if (await delFile.count() > 0) {
                 await delFile.first().click();
-                await this.page.waitForTimeout(1000);
-                //this.log.info("הקובץ נמחק בהצלחה");
+                // המתן שהשגיאה תיעלם אחרי המחיקה
+                await this.errorFileBug.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+                await this.page.waitForTimeout(500);
                 return true;
             }
             return false;
@@ -167,7 +171,8 @@ class FilesPage {
                 await this.page.waitForTimeout(1000);
 
                 const hasError = await this.isVisibleSafe(this.errorFileBug, 2000)
-                    || await this.isVisibleSafe(this.errorFile, 1000);
+                    || await this.isVisibleSafe(this.errorFile, 1000)
+                    || await this.isVisibleSafe(this.errorFileName, 1000);
 
                 if (!hasError) {
                     this.log.info(`✅ תו "${char}" — מאופשר בשם קובץ`);
@@ -267,7 +272,8 @@ class FilesPage {
             await this.page.waitForTimeout(1500);
 
             const hasError = await this.isVisibleSafe(this.errorFileBug, 2000)
-                || await this.isVisibleSafe(this.errorFile, 1000);
+                || await this.isVisibleSafe(this.errorFile, 1000)
+                || await this.isVisibleSafe(this.errorFileName, 1000);
 
             if (hasError) {
                 this.log.info(`✅ שם קובץ עם ${maxLength + 1} תווים — נחסם כצפוי`);
@@ -294,7 +300,8 @@ class FilesPage {
             await this.page.waitForTimeout(1500);
 
             const hasError = await this.isVisibleSafe(this.errorFileBug, 2000)
-                || await this.isVisibleSafe(this.errorFile, 1000);
+                || await this.isVisibleSafe(this.errorFile, 1000)
+                || await this.isVisibleSafe(this.errorFileName, 1000);
 
             if (!hasError) {
                 this.log.info(`✅ שם קובץ עם ${maxLength} תווים — התקבל כצפוי`);
@@ -320,6 +327,269 @@ class FilesPage {
         }
         this.log.info(`========================================`);
 
+        await this.closeFileDialog(fname);
+        return bugs;
+    }
+
+    // פונקציה לבדיקת גודל קובץ מקסימלי (10MB)
+    async TestFileSizeValidation(uploadLocator = "", fname = "קובץ") {
+        this.log.info(`בדיקת גודל קובץ מקסימלי בשדה: ${fname}`);
+
+        let upload;
+        if (uploadLocator) {
+            const baseLocator = typeof uploadLocator === 'string' ? this.page.locator(uploadLocator) : uploadLocator;
+            upload = baseLocator.locator('//*[@type="file"]');
+        } else {
+            upload = this.page.locator('//*[@type="file"]');
+        }
+
+        let bugs = 0;
+        const tempDir = this.po?.dataFolder || require('path').join(__dirname, '../Data');
+
+        // --- בדיקה 1: קובץ 11MB — צריך להידחות ---
+        const largePath = require('path').join(tempDir, 'file11mb.pdf');
+        await this.openFileDialog(fname);
+        await this.page.waitForTimeout(500);
+        await upload.setInputFiles(largePath);
+        await this.page.waitForTimeout(1500);
+
+        const largeRejected = await this.isVisibleSafe(this.errorFileSize, 3000);
+        if (largeRejected) {
+            this.log.info(`✅ קובץ 11MB נדחה עם הודעת שגיאה כצפוי`);
+            await this.deleteAttachedFile(uploadLocator, fname);
+        } else {
+            this.log.error(`✗ קובץ 11MB התקבל — לא צפוי`);
+            bugs++;
+            await this.deleteAttachedFile(uploadLocator, fname);
+        }
+
+        // --- בדיקה 2: קובץ 9.5MB — צריך להתקבל ---
+        const smallPath = require('path').join(tempDir, 'file9mb.pdf');
+        await this.openFileDialog(fname);
+        await this.page.waitForTimeout(500);
+        await upload.setInputFiles(smallPath);
+        await this.page.waitForTimeout(1500);
+
+        const smallAccepted = await this.isVisibleSafe(this.errorFileSize, 2000);
+        if (!smallAccepted) {
+            this.log.info(`✅ קובץ 9.5MB התקבל כצפוי`);
+            await this.deleteAttachedFile(uploadLocator, fname);
+        } else {
+            this.log.error(`✗ קובץ 9.5MB נדחה — לא צפוי`);
+            bugs++;
+        }
+
+        this.log.info(`========================================`);
+        this.log.info(`סיכום בדיקת גודל קובץ — שדה: ${fname}`);
+        if (bugs > 0) {
+            this.log.error(`נמצאו ${bugs} באגים`);
+        } else {
+            this.log.info(`✅ הבדיקה הסתיימה ללא באגים`);
+        }
+        this.log.info(`========================================`);
+
+        await this.closeFileDialog(fname);
+        return bugs;
+    }
+
+    // פונקציה לבדיקת צירוף 2 קבצים — צריכה להופיע הודעת שגיאה
+    async TestFileCountValidation(uploadLocator = "", fname = "קובץ") {
+        this.log.info(`בדיקת מגבלת כמות קבצים בשדה: ${fname}`);
+
+        let upload;
+        if (uploadLocator) {
+            const baseLocator = typeof uploadLocator === 'string' ? this.page.locator(uploadLocator) : uploadLocator;
+            upload = baseLocator.locator('//*[@type="file"]');
+        } else {
+            upload = this.page.locator('//*[@type="file"]');
+        }
+
+        let bugs = 0;
+        const tempDir = this.po?.dataFolder || require('path').join(__dirname, '../Data');
+
+        // צרף קובץ ראשון
+        const file1 = require('path').join(tempDir, 'Doc1.pdf');
+        await this.openFileDialog(fname);
+        await this.page.waitForTimeout(500);
+        await upload.setInputFiles(file1);
+        await this.page.waitForTimeout(1000);
+
+        const firstError = await this.isVisibleSafe(this.errorFileBug, 1000);
+        if (firstError) {
+            this.log.error(`✗ קובץ ראשון לא צורף`);
+            return 1;
+        }
+        this.log.info(`✅ קובץ ראשון צורף`);
+
+        // ניסיון לצרף קובץ שני — צריך להופיע שגיאה
+        await this.openFileDialog(fname);
+        await this.page.waitForTimeout(500);
+        await upload.setInputFiles(file1);
+        await this.page.waitForTimeout(1500);
+
+        const countError = await this.isVisibleSafe(this.errorFileCount, 3000);
+        if (countError) {
+            this.log.info(`✅ קובץ שני נדחה עם הודעת שגיאה כצפוי`);
+            await this.deleteAttachedFile(uploadLocator, fname);
+        } else {
+            this.log.error(`✗ קובץ שני התקבל — לא צפוי`);
+            bugs++;
+            await this.deleteAttachedFile(uploadLocator, fname);
+        }
+
+        this.log.info(`========================================`);
+        if (bugs > 0) {
+            this.log.error(`נמצאו ${bugs} באגים בבדיקת כמות קבצים`);
+        } else {
+            this.log.info(`✅ בדיקת כמות קבצים עברה`);
+        }
+        this.log.info(`========================================`);
+
+        await this.closeFileDialog(fname);
+        return bugs;
+    }
+
+    async TestMultipleFilesAtOnce(uploadLocator = "", fname = "קובץ", count = 3, baseFileName = "Doc1.pdf") {
+        this.log.info(`בדיקת צירוף ${count} קבצים בבת אחת בשדה: ${fname}`);
+        const fs = require('fs');
+        const os = require('os');
+        const tempDir = this.po?.dataFolder || path.join(__dirname, '../Data');
+        const ext = baseFileName.split('.').pop();
+        const sourcePath = path.join(tempDir, baseFileName);
+        const filePaths = [];
+        for (let i = 0; i < count; i++) {
+            const p = path.join(os.tmpdir(), `multi_test_${i}.${ext}`);
+            fs.copyFileSync(sourcePath, p);
+            filePaths.push(p);
+        }
+        let upload;
+        if (uploadLocator) {
+            const baseLocator = typeof uploadLocator === 'string' ? this.page.locator(uploadLocator) : uploadLocator;
+            upload = baseLocator.locator('//*[@type="file"]');
+        } else {
+            upload = this.page.locator('//*[@type="file"]');
+        }
+        let bugs = 0;
+        try {
+            await this.openFileDialog(fname);
+            await this.page.waitForTimeout(500);
+            await upload.setInputFiles(filePaths);
+            await this.page.waitForTimeout(1500);
+            const hasError = await this.isVisibleSafe(this.errorFileBug, 2000)
+                || await this.isVisibleSafe(this.page.locator('//span[contains(text(), "הינך מורשה לעלות עד")]'), 1000);
+            if (!hasError) {
+                this.log.info(`✅ ${count} קבצים צורפו בבת אחת בהצלחה`);
+                await this.deleteAttachedFile(uploadLocator, fname);
+            } else {
+                this.log.error(`✗ צירוף ${count} קבצים בבת אחת נכשל`);
+                bugs++;
+            }
+        } finally {
+            for (const p of filePaths) { try { fs.unlinkSync(p); } catch {} }
+        }
+        await this.closeFileDialog(fname);
+        return bugs;
+    }
+
+    async TestCombinedSizePass(uploadLocator = "", fname = "קובץ") {
+        this.log.info(`בדיקת צירוף קבצים שסה"כ גודלם מעל 10MB - צריך לעבור בשדה: ${fname}`);
+        const fs = require('fs');
+        const os = require('os');
+        const tempDir = this.po?.dataFolder || path.join(__dirname, '../Data');
+        const file9mb = path.join(tempDir, 'file9mb.pdf');
+        const copy9mb = path.join(os.tmpdir(), 'file9mb_copy2.pdf');
+        fs.copyFileSync(file9mb, copy9mb);
+        let upload;
+        if (uploadLocator) {
+            const baseLocator = typeof uploadLocator === 'string' ? this.page.locator(uploadLocator) : uploadLocator;
+            upload = baseLocator.locator('//*[@type="file"]');
+        } else {
+            upload = this.page.locator('//*[@type="file"]');
+        }
+        let bugs = 0;
+        try {
+            await this.openFileDialog(fname);
+            await this.page.waitForTimeout(500);
+            await upload.setInputFiles([file9mb, copy9mb]);
+            await this.page.waitForTimeout(2000);
+            const hasSizeError = await this.isVisibleSafe(this.errorFileSize, 3000);
+            if (!hasSizeError) {
+                this.log.info(`✅ 2 קבצים (סה"כ ~18MB, כל אחד 9MB<10MB) התקבלו - המגבלה לפי קובץ ולא סה"כ`);
+                await this.deleteAttachedFile(uploadLocator, fname);
+            } else {
+                this.log.error(`✗ 2 קבצים (סה"כ ~18MB) נדחו - ייתכן שיש מגבלת גודל כוללת`);
+                bugs++;
+            }
+        } finally {
+            try { fs.unlinkSync(copy9mb); } catch {}
+        }
+        await this.closeFileDialog(fname);
+        return bugs;
+    }
+
+    async TestMaxFilesCount(uploadLocator = "", fname = "קובץ", maxCount = 6, baseFileName = "Doc1.pdf") {
+        this.log.info(`בדיקת מגבלת כמות קבצים (מקסימום ${maxCount}) בשדה: ${fname}`);
+        const fs = require('fs');
+        const os = require('os');
+        const tempDir = this.po?.dataFolder || path.join(__dirname, '../Data');
+        const ext = baseFileName.split('.').pop();
+        const sourcePath = path.join(tempDir, baseFileName);
+        let bugs = 0;
+        const countErrorLocator = this.page.locator('//span[contains(text(), "הינך מורשה לעלות עד")]');
+        let upload;
+        if (uploadLocator) {
+            const baseLocator = typeof uploadLocator === 'string' ? this.page.locator(uploadLocator) : uploadLocator;
+            upload = baseLocator.locator('//*[@type="file"]');
+        } else {
+            upload = this.page.locator('//*[@type="file"]');
+        }
+        // בדיקה 1: בדיוק maxCount קבצים — צריכים להתקבל
+        const files1 = [];
+        for (let i = 0; i < maxCount; i++) {
+            const p = path.join(os.tmpdir(), `maxcount_${i}.${ext}`);
+            fs.copyFileSync(sourcePath, p);
+            files1.push(p);
+        }
+        try {
+            await this.openFileDialog(fname);
+            await this.page.waitForTimeout(500);
+            await upload.setInputFiles(files1);
+            await this.page.waitForTimeout(1500);
+            const hasError = await this.isVisibleSafe(countErrorLocator, 2000);
+            if (!hasError) {
+                this.log.info(`✅ ${maxCount} קבצים התקבלו כצפוי`);
+                await this.deleteAttachedFile(uploadLocator, fname);
+            } else {
+                this.log.error(`✗ ${maxCount} קבצים נדחו (לא צפוי)`);
+                bugs++;
+            }
+        } finally {
+            for (const p of files1) { try { fs.unlinkSync(p); } catch {} }
+        }
+        // בדיקה 2: maxCount+1 קבצים — צריכים להידחות
+        const files2 = [];
+        for (let i = 0; i < maxCount + 1; i++) {
+            const p = path.join(os.tmpdir(), `maxcount2_${i}.${ext}`);
+            fs.copyFileSync(sourcePath, p);
+            files2.push(p);
+        }
+        try {
+            await this.openFileDialog(fname);
+            await this.page.waitForTimeout(500);
+            await upload.setInputFiles(files2);
+            await this.page.waitForTimeout(1500);
+            const hasError = await this.isVisibleSafe(countErrorLocator, 3000);
+            if (hasError) {
+                this.log.info(`✅ ${maxCount + 1} קבצים נדחו כצפוי`);
+                await this.deleteAttachedFile(uploadLocator, fname);
+            } else {
+                this.log.error(`✗ ${maxCount + 1} קבצים התקבלו (לא צפוי)`);
+                bugs++;
+                await this.deleteAttachedFile(uploadLocator, fname);
+            }
+        } finally {
+            for (const p of files2) { try { fs.unlinkSync(p); } catch {} }
+        }
         await this.closeFileDialog(fname);
         return bugs;
     }

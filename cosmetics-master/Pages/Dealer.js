@@ -50,7 +50,7 @@ class DealerPage {
         this.accuracyOfData2 = this.page.locator('//*[contains(text(), "הפרטים ")]//..//input[@type="checkbox"]');
         this.saveSubmit = this.page.locator('//moh-button[@type="submit"]');
         this.dialog = this.page.locator('//div[@role="dialog"] | //dialog');
-        this.okEnd = this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]').first();
+        this.okEnd = this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"] | //button[normalize-space()="הבנתי"]').first();
         this.errorInvalidCharacter = this.page.locator('//*[contains(text(), "תו לא חוקי")]');
         this.errorIncompatiblePrefix = this.page.locator('//*[contains(text(), "התחילית לא תואמת לישות המשפטית")]');
         this.errorIncompatibleId = this.page.locator('//*[contains(text(), "מספר זהות לא תקין")]');
@@ -62,12 +62,12 @@ class DealerPage {
         this.homePage = this.page.locator('//button[@class="primaryBtn homePage"]');
         this.yesCorporation = this.page.locator('//*[text() = "תאגיד"]');
         this.noCorpuration = this.page.locator('//*[text() = "לא תאגיד"]');
-        this.yesMancal = this.page.locator('//*[contains(text(), "האם אתה המנכ")]//..//..//..//*[@class="mdc-switch mdc-switch--selected mdc-switch--checked"]');
-        this.noMancal = this.page.locator('//*[contains(text(), "האם אתה המנכ")]//..//..//..//*[contains(text(), "לא")]');
-        this.noMancalIsrael = this.page.locator('//*[contains(text(), "תושב ישראל")]//..//..//..//*[contains(text(), "לא")]');
-        this.yesMancalIsrael = this.page.locator('//*[contains(text(), "תושב ישראל")]//..//..//..//*[contains(text(), "כן")]');
-        this.yesCorporateOfficer = this.page.locator('//*[contains(text(), "האם אתה נושא משרה")]//..//..//..//*[contains(text(), "כן")]');
-        this.noCorporateOfficer = this.page.locator('//*[contains(text(), "האם אתה נושא משרה")]//..//..//..//*[contains(text(), "לא")]');
+        this.yesMancal = this.page.locator('//*[contains(text(), "האם אתה המנכ")]//..//..//..//..//*[contains(text(), "כן")]');
+        this.noMancal = this.page.locator('//*[contains(text(), "האם אתה המנכ")]//..//..//..//..//*[contains(text(), "לא")]');
+        this.noMancalIsrael = this.page.locator('//*[contains(text(), "תושב ישראל")]//..//..//..//..//*[contains(text(), "לא")]');
+        this.yesMancalIsrael = this.page.locator('//*[contains(text(), "תושב ישראל")]//..//..//..//..//*[contains(text(), "כן")]');
+        this.yesCorporateOfficer = this.page.locator('//*[contains(text(), "האם אתה נושא משרה")]//..//..//..//..//*[contains(text(), "כן")]');
+        this.noCorporateOfficer = this.page.locator('//*[contains(text(), "האם אתה נושא משרה")]//..//..//..//..//*[contains(text(), "לא")]');
         this.code = this.page.locator('//span[text() ="עסק עסק"]//..//..//i[@class="expand-icon moh-icon grid_ar_dropdown ng-star-inserted"]');
         this.yesButton = this.page.locator('//button[@class="swal2-confirm swal2-styled swal2-default-outline"]');
         this.error = this.page.locator('//*[@class="error-message ng-star-inserted"]');
@@ -109,6 +109,11 @@ class DealerPage {
             await this.orderButton.click({ timeout: 5000 });
         } catch {
             await this.orderButton.dispatchEvent('click');
+        }
+        // טיפול בדיאלוג "השינויים לא נשמרו - האם ברצונך לבטל?"
+        const confirmBtn = this.page.locator('//button[@id="confirm-btn"]');
+        if (await confirmBtn.isVisible().catch(() => false)) {
+            await confirmBtn.click();
         }
     }
 
@@ -260,25 +265,106 @@ class DealerPage {
             await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
             const dialogText1 = await this.dialog.textContent();
             console.log("תוצאת הרישום היא: \n" + dialogText1);
+            const saveKey = co === 1 ? 'taagid' : 'lo_taagid';
             if (dialogText1.includes("אנא נסה שוב")) {
                 this.log.info("⚠️ שגיאת שרת - ממתין להמשך ידני...");
                 await this.okEnd.click();
                 await this.page.pause();
+                await this.saveSubmit.waitFor({ state: 'visible', timeout: 15000 });
+                await this.saveSubmit.scrollIntoViewIfNeeded();
                 await this.saveSubmit.click();
                 await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
                 const retryText = await this.dialog.textContent();
                 if (retryText.includes("בהצלחה")) {
-                    const oldfilepath = this.po.dataFolder + '\\RP.txt';
-                    await this.sharedUtils.WriteFile(oldfilepath, t[1]);
+                    this.sharedUtils.WriteBusiness(saveKey, t[1]);
                 }
             } else if (dialogText1.includes("בהצלחה")) {
                 console.log("מתחיל רישום בקובץ");
-                const oldfilepath = this.po.dataFolder + '\\RP.txt';
-                await this.sharedUtils.WriteFile(oldfilepath, t[1]);
+                this.sharedUtils.WriteBusiness(saveKey, t[1]);
                 console.log("סיים רישום בקובץ");
             }
         } catch (err) {
             console.log("לא הופיעה הודעה בסיום הרישום: " + err.message);
+        }
+    }
+
+    async RegulationDealerBusinessNaot(name = "", idd = "") {
+        console.log("רישום עוסק בתמרוק תאגיד עם יבואן, יבואן נאות ונציג אחראי");
+        const t = await this.ReadIdName(idd, name);
+        console.log("מספר מזהה עסק: " + t[0]);
+        console.log("שם העסק: " + t[1]);
+
+        try {
+            await this.clickOrderButton();
+            if (await this.isVisibleSafe(this.dialog, 3000)) {
+                await this.okEnd.click();
+            }
+            await this.tamrukimButton1.click();
+
+            await this.yesCorporation.click();
+            await this.legalEntity.click();
+            await this.authorized.click();
+            await this.businessName.fill(t[1]);
+            await this.businessId.fill(t[0]);
+            await this.nextStep.click();
+
+            if (await this.CheckError() === true) {
+                throw new Error("שגיאה בשלב 1 — מספר מזהה לא תקין");
+            }
+
+            await this.nextStep.click();
+
+            await this.supplierCheckbox.click();   // יבואן
+            await this.naotCheckbox.click();       // יבואן נאות
+            await this.rPCheckbox.click();         // נציג אחראי
+            await this.address.AddAddress(false);
+            await this.oK1.click();
+            await this.oK2.click();
+            await this.nextStep.click();
+
+            if (await this.CheckError() === true) {
+                throw new Error("שגיאה בשלב 2 — כתובת");
+            }
+
+            await this.businessLicenseRequired.click();
+
+            // הצהרות יבואן נאות
+            if (await this.isVisibleSafe(this.properImporterDeclaration1, 2000)) {
+                await this.properImporterDeclaration1.click();
+                await this.properImporterDeclaration2.click();
+                await this.properImporterDeclaration3.click();
+            }
+
+            if (!(await this.isVisibleSafe(this.mySelfDeclaration, 1000))) {
+                await this.page.locator('//*[@aria-label="הוספת כתובת"]').click();
+            }
+
+            await this.mySelfDeclaration.click();
+            await this.accuracyOfData1.click();
+            await this.accuracyOfData2.click();
+            await this.saveSubmit.click();
+
+            await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
+            const dialogText = await this.dialog.textContent();
+            console.log("תוצאת הרישום היא: \n" + dialogText);
+            if (dialogText.includes("אנא נסה שוב")) {
+                this.log.info("⚠️ שגיאת שרת - ממתין להמשך ידני...");
+                await this.okEnd.click();
+                await this.page.pause();
+                await this.saveSubmit.waitFor({ state: 'visible', timeout: 15000 });
+                await this.saveSubmit.scrollIntoViewIfNeeded();
+                await this.saveSubmit.click();
+                await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
+                const retryText = await this.dialog.textContent();
+                if (retryText.includes("בהצלחה")) {
+                    this.sharedUtils.WriteBusiness('taagid_naot', t[1]);
+                }
+            } else if (dialogText.includes("בהצלחה")) {
+                this.sharedUtils.WriteBusiness('taagid_naot', t[1]);
+            }
+        } catch (err) {
+            this.log.error("RegulationDealerBusinessNaot נכשל: " + err.message);
+            throw err;
         }
     }
 
@@ -394,16 +480,16 @@ class DealerPage {
                 this.log.info("⚠️ שגיאת שרת - ממתין להמשך ידני...");
                 await this.okEnd.click();
                 await this.page.pause();
+                await this.saveSubmit.waitFor({ state: 'visible', timeout: 15000 });
+                await this.saveSubmit.scrollIntoViewIfNeeded();
                 await this.saveSubmit.click();
                 await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
                 const retryText2 = await this.dialog.textContent();
                 if (retryText2.includes("בהצלחה")) {
-                    const oldfilepath = this.po.dataFolder + '\\RP.txt';
-                    await this.sharedUtils.WriteFile(oldfilepath, t[1]);
+                    this.sharedUtils.WriteBusiness('taagid', t[1]);
                 }
             } else if (dialogText2.includes("בהצלחה")) {
-                const oldfilepath = this.po.dataFolder + '\\RP.txt';
-                await this.sharedUtils.WriteFile(oldfilepath, t[1]);
+                this.sharedUtils.WriteBusiness('taagid', t[1]);
             }
         } catch (err) {
             console.log("לא הופיעה הודעה בסיום הרישום: " + err.message);
@@ -524,12 +610,9 @@ class DealerPage {
         const t = await this.ReadIdName(idd, name);
         let i = 0;
         console.log("מספר מזהה: " + t[0] + " שם העסק: " + t[1]);
-        await this.page.waitForTimeout(5000);
+        await this.page.waitForTimeout(2000);
 
         await this.clickOrderButton();
-        if (await this.isVisibleSafe(this.dialog, 3000)) {
-            await this.okEnd.click();
-        }
         await this.tamrukimButton1.waitFor({ state: 'visible' });
         await this.tamrukimButton1.click();
         await this.businessName.fill(t[1]);
@@ -576,6 +659,11 @@ class DealerPage {
         console.log('אחרי לחיצה על שמור ושלח');
 
         await this.page.waitForTimeout(3000);
+        if (await this.isVisibleSafe(this.dialog, 3000)) {
+            const dialogText = await this.dialog.textContent();
+            console.log("תוצאת הרישום: " + dialogText);
+            await this.okEnd.click();
+        }
     }
 
     async OfficerDealer(name = "", idd = "") {
@@ -647,8 +735,7 @@ class DealerPage {
                     await this.CheckNetworkErrors();
                 } else if (dialogText.includes("בהצלחה")) {
                     console.log("מתחיל רישום בקובץ");
-                    const oldfilepath = this.po.dataFolder + '\\RP.txt';
-                    await this.sharedUtils.WriteFile(oldfilepath, t[1]);
+                    this.sharedUtils.WriteBusiness('taagid', t[1]);
                     console.log("סיים רישום בקובץ");
                 }
             } catch (err) {
@@ -687,19 +774,10 @@ class DealerPage {
             return;
         }
         await this.supervisedEmploee.toggle.click();
-        await this.sharedUtils.CheckCharacters(this.supervisedEmploee.firstName, "שם פרטי", this.env.charName);
-        await this.sharedUtils.CheckMaxLength(this.supervisedEmploee.firstName, 50, "שם פרטי");
         await this.supervisedEmploee.firstName.fill(firstName);
-        await this.sharedUtils.CheckCharacters(this.supervisedEmploee.lastName, "שם משפחה", this.env.charName);
-        await this.sharedUtils.CheckMaxLength(this.supervisedEmploee.lastName, 50, "שם משפחה");
         await this.supervisedEmploee.lastName.fill(lastName);
-        await this.sharedUtils.CheckCharacters(this.supervisedEmploee.idNumber, "ת.ז", this.env.charBusinessId);
-        await this.sharedUtils.CheckMaxLength(this.supervisedEmploee.idNumber, 9, "ת.ז");
         await this.supervisedEmploee.idNumber.fill(idNumber);
-        await this.sharedUtils.TestIsraeliPhoneNumberValidation(this.supervisedEmploee.telefonNumber);
         await this.supervisedEmploee.telefonNumber.fill(telefonNumber);
-        await this.sharedUtils.CheckCharactersEmail(this.supervisedEmploee.emailAddress, "דואר אלקטרוני", this.env.charEmail);
-        await this.sharedUtils.CheckMaxEmail(this.supervisedEmploee.emailAddress, 100, "דואר אלקטרוני");
         await this.supervisedEmploee.emailAddress.fill(emailAddress);
         await this.supervisedEmploee.checkBox.click();
         await this.nextStep.click();

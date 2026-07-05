@@ -31,7 +31,7 @@ class RegulationRPPage {
         this.dialog = this.page.locator('//*[@role ="dialog"]');
         this.okEnd = this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]');
         this.errorFile = this.page.locator('//span[contains(text(), "לא נתמך")]');
-        this.delFile = this.page.locator('//i[@class="moh-icon delete"]');
+        this.delFile = this.page.locator('//i[@class="moh-icon delete"] | //button[normalize-space()="הסרה"]');
         this.error = this.page.locator('//*[@class="error-message ng-star-inserted"]');
         this.errorFileBug = this.page.locator('//span[contains(text(),"העלאת קובץ נכשלה")]');
     }
@@ -76,9 +76,7 @@ class RegulationRPPage {
         this.log.info("רישום נציג אחראי מקושר לתאגיד");
         let corpurationName = name;
         if (name === "") {
-            const oldfilepath = this.po.dataFolder + '\\RP2.txt';
-            const result = await this.sharedUtils.ReadFile(oldfilepath);
-            corpurationName = result[0].trim();
+            corpurationName = this.sharedUtils.ReadBusiness('rp_taagid');
         }
         await this.orderButton.scrollIntoViewIfNeeded();
         try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
@@ -90,9 +88,7 @@ class RegulationRPPage {
         await this.option.click();
         if (flug) {
             await this.address.RPaddress();
-            await this.files.TestFileTypeValidation();
-            await this.files.TestFileNameValidation("", "קובץ נציג אחראי תאגיד", "Doc1.pdf");
-            await this.files.TestFileNameMaxLength("", "קובץ נציג אחראי תאגיד", "Doc1.pdf");
+            await this.FileAttachmentValidation("נציג אחראי מקושר לתאגיד");
         } else {
             await this.address.RPaddressFast();
         }
@@ -104,9 +100,7 @@ class RegulationRPPage {
         this.log.info("רישום נציג אחראי מקושר ליצרן או יבואן");
         let businessName = name;
         if (name === "") {
-            const oldfilepath = this.po.dataFolder + '\\RP.txt';
-            const result = await this.sharedUtils.ReadFile(oldfilepath);
-            businessName = result[0].trim(); // ← שורה ראשונה בלי רווחים
+            businessName = this.sharedUtils.ReadBusiness('taagid');
         }
         await this.orderButton.scrollIntoViewIfNeeded();
         try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
@@ -125,9 +119,7 @@ class RegulationRPPage {
         await this.page.waitForTimeout(3000);
         if (flug) {
             await this.address.RPaddress();
-            await this.files.TestFileTypeValidation();
-            await this.files.TestFileNameValidation("", "קובץ נציג אחראי מקושר לעסק", "Doc1.pdf");
-            await this.files.TestFileNameMaxLength("", "קובץ נציג אחראי מקושר לעסק", "Doc1.pdf");
+            await this.FileAttachmentValidation("נציג אחראי מקושר ליצרן או יבואן");
         } else {
             await this.address.RPaddressFast();
         }
@@ -157,9 +149,7 @@ class RegulationRPPage {
         await this.businessId.fill(t[0]);
         if (flug) {
             await this.address.RPaddress();
-            await this.files.TestFileTypeValidation();
-            await this.files.TestFileNameValidation("", "קובץ נציג אחראי בודד", "Doc1.pdf");
-            await this.files.TestFileNameMaxLength("", "קובץ נציג אחראי בודד", "Doc1.pdf");
+            await this.FileAttachmentValidation("נציג אחראי בודד");
         } else {
             await this.address.RPaddressFast();
         }
@@ -208,6 +198,51 @@ class RegulationRPPage {
         await this.Save(f);
     }
 
+    // ניווט לשדה הקובץ של נציג אחראי בודד (ללא שמירה)
+    async _NavigateToFileField() {
+        const oldfilepath = this.po.dataFolder + '\\linked.txt';
+        const t = await this.sharedUtils.ReadFileUpdate(oldfilepath);
+        await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
+        const confirmBtn = this.page.locator('//button[@id="confirm-btn"]');
+        if (await confirmBtn.isVisible().catch(() => false)) await confirmBtn.click();
+        await this.rpIshKesher3.waitFor({ state: 'visible', timeout: 10000 });
+        await this.rpIshKesher3.click();
+        await this.noBusiness.click();
+        await this.business.fill(t[1] + t[2]);
+        await this.businessId.fill(t[0]);
+        await this.address.RPaddressFast();
+    }
+
+    async FileTypeValidationTest() {
+        this.log.info("בדיקת סוגי קבצים — נציג אחראי בודד");
+        await this._NavigateToFileField();
+        const bugs = await this.files.TestFileTypeValidation("", "קובץ");
+        return bugs;
+    }
+
+    async FileNameValidationTest() {
+        this.log.info("בדיקת שם קובץ (תווים + אורך) — נציג אחראי בודד");
+        await this._NavigateToFileField();
+        const charResult = await this.files.TestFileNameValidation("", "קובץ", "Doc1.pdf");
+        const maxLenBugs = await this.files.TestFileNameMaxLength("", "קובץ", "Doc1.pdf", 100);
+        return charResult.bugs + maxLenBugs;
+    }
+
+    async FileSizeValidationTest() {
+        this.log.info("בדיקת גודל קובץ — נציג אחראי בודד");
+        await this._NavigateToFileField();
+        const bugs = await this.files.TestFileSizeValidation("", "קובץ");
+        return bugs;
+    }
+
+    async FileCountValidationTest() {
+        this.log.info("בדיקת כמות קבצים — נציג אחראי בודד");
+        await this._NavigateToFileField();
+        const bugs = await this.files.TestFileCountValidation("", "קובץ");
+        return bugs;
+    }
+
     async AllFiles() {
         const filesToTest = [
             { name: 'תמונה תקינה (png)', path: 'image.png' },
@@ -224,13 +259,86 @@ class RegulationRPPage {
         }
     }
 
+    // עזר: ניווט לטופס נציג אחראי לפי סוג — עוצר לפני מילוי פרטי התקשרות
+    async _NavigateToContactSection(rpType = "בודד") {
+        const confirmBtn = this.page.locator('//button[@id="confirm-btn"]');
+        await this.orderButton.scrollIntoViewIfNeeded();
+        try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }
+        if (await confirmBtn.isVisible().catch(() => false)) await confirmBtn.click();
+        await this.rpIshKesher3.waitFor({ state: 'visible', timeout: 10000 });
+        await this.rpIshKesher3.click();
+
+        if (rpType === "בודד") {
+            const oldfilepath = this.po.dataFolder + '\\linked.txt';
+            const t = await this.sharedUtils.ReadFileUpdate(oldfilepath);
+            await this.noBusiness.click();
+            await this.business.fill(t[1] + t[2]);
+            await this.businessId.fill(t[0]);
+        } else if (rpType === "תאגיד") {
+            await this.yesCorporation.click();
+            await this.corpuration.click();
+            await this.corpuration.fill(this.sharedUtils.ReadBusiness('rp_taagid'));
+            await this.option.click();
+        } else if (rpType === "יצרן") {
+            const result = [this.sharedUtils.ReadBusiness('taagid')];
+            await this.yesBusiness.click();
+            await this.page.waitForTimeout(3000);
+            await this.business.click();
+            await this.business.fill(result[0].trim());
+            await this.option.click();
+            await this.page.waitForTimeout(3000);
+        }
+    }
+
+    // ולידציה: שליחה ללא שום שדה פרסום — צריכה להופיע הודעת שגיאה בדיאלוג
+    async PublicCheckValidation() {
+        this.log.info("בדיקת ולידציה: שליחה ללא פרטי פרסום");
+        await this._NavigateToContactSection("בודד");
+        await this.address.RPaddressNoPublic();
+        const f = await this.files.AtachFile("", "Doc1.pdf");
+        await this.saveSubmit.click();
+        const dialog = this.regulationDealer.dialog;
+        await dialog.waitFor({ state: 'visible', timeout: 15000 });
+        const text = await dialog.textContent();
+        this.log.info("הודעת הדיאלוג: " + text);
+        const hasError = text.includes("לפחות אחד");
+        if (!hasError) this.log.warn("⚠️ טקסט הדיאלוג לא תאם — הטקסט שהתקבל: " + text);
+        await this.regulationDealer.okEnd.click();
+        return hasError;
+    }
+
+    // נציג אחראי בודד + טלפון לפרסום בלבד → צריך לעבור
+    async PublicCheckPhoneOnly() {
+        this.log.info("בדיקת פרטי פרסום: טלפון לפרסום בלבד — נציג אחראי בודד");
+        await this._NavigateToContactSection("בודד");
+        await this.address.RPaddressPublicPhoneOnly();
+        const f = await this.files.AtachFile("", "Doc1.pdf");
+        await this.Save(f);
+    }
+
+    // נציג אחראי בודד + מייל לפרסום בלבד → צריך לעבור
+    async PublicCheckEmailOnly() {
+        this.log.info("בדיקת פרטי פרסום: מייל לפרסום בלבד — נציג אחראי בודד");
+        await this._NavigateToContactSection("בודד");
+        await this.address.RPaddressPublicEmailOnly();
+        const f = await this.files.AtachFile("", "Doc1.pdf");
+        await this.Save(f);
+    }
+
+    // נציג אחראי בודד + כתובת לפרסום בלבד → צריך לעבור
+    async PublicCheckAddressOnly() {
+        this.log.info("בדיקת פרטי פרסום: כתובת לפרסום בלבד — נציג אחראי בודד");
+        await this._NavigateToContactSection("בודד");
+        await this.address.RPaddressPublicAddressOnly();
+        const f = await this.files.AtachFile("", "Doc1.pdf");
+        await this.Save(f);
+    }
+
     async PublicCheck(locator=this.yesCorporation, name = "") {
         this.log.info("בדיקת מקטע פרטי התקשרות");
         let corpurationName = name;
         if (name === "") {
-            const oldfilepath = this.po.dataFolder + '\\RP2.txt';
-            const result = await this.sharedUtils.ReadFile(oldfilepath);
-            corpurationName = result[0].trim(); // ← שורה ראשונה בלי רווחים
+            corpurationName = this.sharedUtils.ReadBusiness('rp_taagid');
         }
         await this.orderButton.scrollIntoViewIfNeeded();
         try { await this.orderButton.click({ timeout: 5000 }); } catch { await this.orderButton.dispatchEvent("click"); }

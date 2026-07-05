@@ -16,8 +16,8 @@ class ChageActivityBussinesPage {
         this.noDistributor = this.page.locator('//mat-list-option[@aria-selected="false"]//span[contains(text(), "מפיץ") ]');
         this.yesProper = this.page.locator('//mat-list-option[@aria-selected="true"]//span[contains(text(), "יבואן נאות") ]');
         this.noProper = this.page.locator('//mat-list-option[@aria-selected="false"]//span[contains(text(), "יבואן נאות") ]');
-        this.yesImporter = this.page.locator('//mat-list-option[@aria-selected="true"]//span[contains(text(), "יבואן") and not(contains(text(), "נאות"))]');
-        this.noImporter = this.page.locator('//mat-list-option[@aria-selected="false"]//span[contains(text(), "יבואן") and not(contains(text(), "נאות"))]');
+        this.yesImporter = this.page.locator('//mat-list-option[@aria-selected="true"]//span[normalize-space(text())="יבואן"]');
+        this.noImporter = this.page.locator('//mat-list-option[@aria-selected="false"]//span[normalize-space(text())="יבואן"]');
         this.yesmanufactor = this.page.locator('//mat-list-option[@aria-selected="true"]//span[contains(text(), "יצרן") ]');
         this.nomanufactor = this.page.locator('//mat-list-option[@aria-selected="false"]//span[contains(text(), "יצרן") ]');
         this.yesRP = this.page.locator('//mat-list-option[@aria-selected="true"]//span[contains(text(), "נציג אחראי") ]');
@@ -45,7 +45,7 @@ class ChageActivityBussinesPage {
             let allWereSelected = true;
 
             for (const v of values) {
-                const selectedSelector = `//mat-list-option[@aria-selected="true"]//span[contains(text(), "${v}")]`;
+                const selectedSelector = `//mat-list-option[@aria-selected="true"]//span[normalize-space(text())="${v}"]`;
                 if (!(await this.sharedUtils.isVisibleSafe(selectedSelector, 2000))) {
                     allWereSelected = false;
                     break;
@@ -57,8 +57,8 @@ class ChageActivityBussinesPage {
                 return;
             }
             for (const v of values) {
-                const clickSelector = `//mat-list-option[.//span[contains(text(), "${v}")]]`;
-                const selectedSelector = `//mat-list-option[@aria-selected="true"]//span[contains(text(), "${v}")]`;
+                const clickSelector = `//mat-list-option[.//span[normalize-space(text())="${v}"]]`;
+                const selectedSelector = `//mat-list-option[@aria-selected="true"]//span[normalize-space(text())="${v}"]`;
                 const isSelected = await this.sharedUtils.isVisibleSafe(selectedSelector, 2000);
 
                 await this.page.locator(clickSelector).click();

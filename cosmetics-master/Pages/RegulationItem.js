@@ -36,6 +36,11 @@ class RegulationItemPage {
         this.extCreateN = this.page.locator('//button[@class="primary-btn"]');
         this.extOkEndNarrow = this.page.locator('//button[@class="main-button narrow"] | //button[normalize-space()="OK"] | //button[normalize-space()="אישור"]');
 
+        // שכפול נוטיפיקציה
+        this.duplicateNotifBtn = this.page.locator('//button[contains(., "שכפל נוטיפיקציה")]');
+        this.dupTableRows = this.page.locator('//app-duplicate-notification//mat-row[@role="row"] | //mat-dialog-container//mat-row[@role="row"]');
+        this.dupNoData = this.page.locator('//*[contains(text(), "אין נתונים") or contains(text(), "No data") or contains(text(), "לא נמצאו")]');
+
     }
 
     async AddItem(nameH, nameE, euro = 0, flug = true) {
@@ -83,6 +88,7 @@ class RegulationItemPage {
             await this.dialog.waitFor({ state: 'visible', timeout: 30000 });
         }
         await this.okEnd.click();
+        await this.page.reload();
         await this.sharedUtils.OpenPageMancal(b);
         await this.addNew.waitFor({ state: 'visible', timeout: 10000 });
     }
@@ -154,8 +160,8 @@ class RegulationItemPage {
         }
     }
 
-    async AddItemCharTest(nameH, nameE, euro = 0) {
-        const b = await this.sharedUtils.OpenPageMancal();
+    async AddItemCharTest(nameH, nameE, euro = 0, businessName = "") {
+        const b = await this.sharedUtils.OpenPageMancal(businessName);
         await this.addNew.click();
 
         if (euro === 1) {
@@ -285,19 +291,35 @@ class RegulationItemPage {
 
                 // ---- אישור ----
                 if (action === "approve") {
+                    const confirmBtn = this.page.locator('//button[@class="main-button sm"]');
                     await approveBtn.click();
-                    await this.extOkEndNarrow.click();
-                    if (!openAfter) {
-                        console.log("לא נפתח נוטיפיקציה אחרי האישור, יוצא מהפונקציה. 176");
-                        return; // תסריט 1: רק אישור — יוצאים
-                    }
-                }
-                console.log("אחרי האופן 179")
-                await this.extOkEndNarrow.click();
+console.log("לחצתי על כפתור אישור פריט, מחכה לדיאלוג 1...  170");
+                    // דיאלוג 1 — אישור הפעולה
+                    await confirmBtn.waitFor({ state: 'visible', timeout: 10000 });
+                    await confirmBtn.click();
+                    console.log("לחצתי על כפתור אישור בדיאלוג 1, מחכה לדיאלוג 2...  174");
 
-                // תסריט 2: אישור + פתיחת הנוטיפיקציה
-                await this._openRowItem(row);
-                return;
+                    // דיאלוג 2 — הצלחה
+                    const successDialog = this.page.locator('//*[@role="dialog"]');
+                    await successDialog.waitFor({ state: 'visible', timeout: 10000 });
+                    const successText = await successDialog.textContent();
+                    if (!successText.includes("הפריט אושר בהצלחה")) {
+                        throw new Error(`דיאלוג אישור פריט לא הכיל את המלל הצפוי. התקבל: ${successText}`);
+                    }
+                    const dialog2OkBtn = this.page.locator('//button[@class="main-button sm"]');
+                    await dialog2OkBtn.waitFor({ state: 'visible', timeout: 5000 });
+                    await dialog2OkBtn.click();
+                    await successDialog.waitFor({ state: 'hidden', timeout: 5000 });
+
+                    if (!openAfter) {
+                        console.log("לא נפתח נוטיפיקציה אחרי האישור, יוצא מהפונקציה.");
+                        return;
+                    }
+
+                    // תסריט 2: אישור + פתיחת הנוטיפיקציה
+                    await this._openRowItem(row);
+                    return;
+                }
             }
 
             // ---- אין כפתור אישור — פתיחה ישירה ----
@@ -457,6 +479,50 @@ class RegulationItemPage {
 
         this.log.warn(`לא נמצא פריט בשם: ${itemName}`);
         return null;
+    }
+
+    /**
+     * לוחץ על שורת פריט בעמוד המנכ"ל, לוחץ על "שכפול נוטיפיקציה",
+     * ומחזיר { hasRows, count } — האם יש שורות בטבלת השכפול.
+     * אם selectIndex >= 0 — בוחר את השורה הזאת ומחזיר את הנוטיפיקציה המשוכפלת.
+     */
+    async OpenDuplicateTable(itemName, selectIndex = -1) {
+        const rows = this.page.locator('//mat-row[@role="row"]');
+        await rows.first().waitFor({ state: 'visible', timeout: 10000 });
+        const total = await rows.count();
+
+        for (let i = 0; i < total; i++) {
+            const rowText = await rows.nth(i).textContent();
+            if (rowText.includes(itemName)) {
+                await rows.nth(i).click();
+                await this.page.waitForTimeout(1000);
+                await this.duplicateNotifBtn.waitFor({ state: 'visible', timeout: 5000 });
+                await this.duplicateNotifBtn.click();
+                await this.page.waitForTimeout(2000);
+
+                const dupRows = this.dupTableRows;
+                const noData = this.dupNoData;
+
+                const noDataVisible = await this.sharedUtils.isVisibleSafe(noData, 3000);
+                if (noDataVisible) {
+                    return { hasRows: false, count: 0 };
+                }
+
+                await dupRows.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+                const count = await dupRows.count();
+                if (count === 0) {
+                    return { hasRows: false, count: 0 };
+                }
+
+                if (selectIndex >= 0) {
+                    await dupRows.nth(selectIndex).click();
+                    await this.page.waitForTimeout(2000);
+                }
+
+                return { hasRows: true, count };
+            }
+        }
+        throw new Error(`לא נמצא פריט "${itemName}" לפתיחת שכפול`);
     }
 }
 

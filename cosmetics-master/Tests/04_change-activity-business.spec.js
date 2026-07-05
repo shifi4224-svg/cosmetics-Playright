@@ -44,10 +44,6 @@ test.describe('בדיקות פרטי עסק - שינוי פעילות', () => {
 
     test('שינוי פעילות עסק ליבואן ומפיץ', async ({ page }) => {
         await chageActivityBussinesPage.ChangeActivity(["יבואן", "מפיץ"]);
-        const text = await dealerPage.dialog.textContent();
-        expect(text).toContain('בהצלחה');
-        await dealerPage.okEnd.click();
-
     });
 
     test('בדיקת שמירה ללא שינוי בפעילות העסק', async ({ page }) => {

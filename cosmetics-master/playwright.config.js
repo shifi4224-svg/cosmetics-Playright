@@ -1,6 +1,7 @@
 const { defineConfig } = require('@playwright/test');
 
 module.exports = defineConfig({
+  globalSetup: require.resolve('./global-setup'),
   // מגדיר כמה זמן (באלפיות שנייה) לכל טסט לרוץ לפני שהוא נכשל על טיימאאוט
   timeout: 60000,
   testDir: './Tests',
@@ -31,16 +32,18 @@ module.exports = defineConfig({
         '**/07_supervised-employee.spec.js',
         '**/08_regulation-item.spec.js',
         '**/09_regulation-notification.spec.js',
-        '**/10_proper-notification.spec.js',
-        '**/11_items.spec.js',
-        '**/12_after72h.spec.js',
-        '**/13_tipulit-dealer.spec.js',
-        '**/14_shades.spec.js',
-        '**/15_general-request.spec.js',
-        '**/16_cancel-notification.spec.js',
-        '**/17_update-proper-importer.spec.js',
-        '**/18_side-effect.spec.js',
-        '**/19_missing-scenarios.spec.js',
+        '**/10_notification-files.spec.js',
+        '**/11_proper-notification.spec.js',
+        '**/12_items.spec.js',
+        '**/13_after72h.spec.js',
+        '**/14_tipulit-dealer.spec.js',
+        '**/15_shades.spec.js',
+        '**/16_general-request.spec.js',
+        '**/17_cancel-notification.spec.js',
+        '**/18_update-proper-importer.spec.js',
+        '**/19_side-effect.spec.js',
+        '**/20_missing-scenarios.spec.js',
+        '**/21_tipulit-sync.spec.js',
       ]
     }
   ]

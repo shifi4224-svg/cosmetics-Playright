@@ -60,8 +60,7 @@ class RegulationTaagidRPPage {
                 throw new Error(`רישום תאגיד נציג אחראי נכשל: ${dialogText}`);
             }
             this.log.info("✅ תאגיד נציג אחראי נרשם בהצלחה");
-            const oldfilepath2 = this.po.dataFolder + '\\RP2.txt';
-            await this.sharedUtils.WriteFile(oldfilepath2, t[1]);
+            this.sharedUtils.WriteBusiness('rp_taagid', t[1]);
         } catch (err) {
             this.log.error('LoginToDeaker error', err);
             throw err;
@@ -131,8 +130,7 @@ class RegulationTaagidRPPage {
             const dialogText = await this.regulationDealer.dialog.textContent();
             this.log.info(dialogText);
             if (dialogText.includes("בהצלחה")) {
-                const oldfilepath2 = this.po.dataFolder + '\\RP2.txt';
-                await this.sharedUtils.WriteFile(oldfilepath2, t[1]);
+                this.sharedUtils.WriteBusiness('rp_taagid', t[1]);
             }
         }
     }
