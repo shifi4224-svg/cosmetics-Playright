@@ -321,12 +321,9 @@ class ProperNotificationPage {
     async CreateProperNotificationWithDrafts(itemName = "") {
         this.log.info("מתחיל יצירת נוטיפיקציה נאותה - שמירת טיוטה בכל שלב");
         const v = await this.sharedUtils.ReadFileComment(require('path').join(this.po.dataFolder, "proper.txt"));
-        const RegulationItemPage = require('./RegulationItem');
-        const regulationItemPage = new RegulationItemPage(this.page, this.po, this.env, this.log);
 
         // --- טיוטה 1: יצרן התמרוק ---
         this.log.info("טיוטה 1 — יצרן התמרוק");
-        await regulationItemPage.OpenItem1("", "", itemName, "פריט נאות", 'לאישור נציג אחראי', "approve", true);
 
         await this.ManufacturAddressProper([v[0], v[1], v[2], v[3], v[4], v[5]], false);
         await this.noFirstQuestion.click();
@@ -571,12 +568,8 @@ class ProperNotificationPage {
         }
     }
 
-    async CreateProperNotificationCharAndMaxTest(itemName = "") {
+    async CreateProperNotificationCharAndMaxTest() {
         this.log.info("מתחיל יצירת נוטיפיקציה נאותה - בדיקת תווים + מקסימום תווים בכל שדה");
-
-        const RegulationItemPage = require('./RegulationItem');
-        const regulationItemPage = new RegulationItemPage(this.page, this.po, this.env, this.log);
-        await regulationItemPage.OpenItem1("", "", itemName, "פריט נאות", 'לאישור נציג אחראי', "approve", true);
 
         // --- שלב 1: כתובת יצרן ---
         await this.manufactureCountry.click();

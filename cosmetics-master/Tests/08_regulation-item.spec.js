@@ -47,10 +47,16 @@ test.describe('בדיקות פריטים - הוספת פריט (RegulationItem)'
     });
 
     test('הוספת פריט רגיל (מסלול בסיסי)', async ({ page }) => {
+        if (!sharedUtils.ReadBusiness('taagid_rp')) {
+            test.skip(true, 'עסק taagid אין לו נציג אחראי מקושר — הרץ תחילה 03_rp-registration');
+        }
         await regulationItemPage.AddItem("פריט רגיל אוטומציה", "Regular Item Automation", 0, false);
     });
 
     test('הוספת פריט נאות (מסלול אירופאי) ללא ולידציות מיותרות', async ({ page }) => {
+        if (!sharedUtils.ReadBusiness('taagid_naot_rp')) {
+            test.skip(true, 'עסק taagid_naot אין לו נציג אחראי מקושר — הרץ תחילה 03_rp-registration');
+        }
         const businessName = sharedUtils.ReadBusiness('taagid_naot');
         await sharedUtils.OpenPageMancal(businessName);
         await regulationItemPage.addNew.click();
@@ -75,6 +81,9 @@ test.describe('בדיקות פריטים - הוספת פריט (RegulationItem)'
     });
 
     test('הוספת פריט ע"י מנכל ואישור ע"י נציג אחראי', async ({ page }) => {
+        if (!sharedUtils.ReadBusiness('taagid_rp')) {
+            test.skip(true, 'עסק taagid אין לו נציג אחראי מקושר — הרץ תחילה 03_rp-registration');
+        }
         const uniqueId = Date.now().toString().slice(-4);
         const itemNameH = `פריט לאישור אוטומציה ${uniqueId}`;
         const itemNameE = `Approval Item ${uniqueId}`;
@@ -92,6 +101,9 @@ test.describe('בדיקות פריטים - הוספת פריט (RegulationItem)'
     });
 
     test('הוספת פריט ע"י מנכל ודחייה ע"י נציג אחראי', async ({ page }) => {
+        if (!sharedUtils.ReadBusiness('taagid_rp')) {
+            test.skip(true, 'עסק taagid אין לו נציג אחראי מקושר — הרץ תחילה 03_rp-registration');
+        }
         // נייצר שם ייחודי כדי שנוכל למצוא אותו בקלות בטבלה
         const uniqueId = Date.now().toString().slice(-4);
         const itemNameH = `פריט לאישור אוטומציה ${uniqueId}`;
@@ -113,6 +125,9 @@ test.describe('בדיקות פריטים - הוספת פריט (RegulationItem)'
     });
 
     test('הוספת פריט רגיל - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
+        if (!sharedUtils.ReadBusiness('taagid_rp')) {
+            test.skip(true, 'עסק taagid אין לו נציג אחראי מקושר — הרץ תחילה 03_rp-registration');
+        }
         test.setTimeout(3600000);
         const uniqueId = Date.now().toString().slice(-4);
         const itemNameH = `בדיקת תווים פריט ${uniqueId}`;
@@ -122,6 +137,9 @@ test.describe('בדיקות פריטים - הוספת פריט (RegulationItem)'
     });
 
     test('הוספת פריט נאות - בדיקת תווים מאופשרים + מקסימום תווים ושמירה', async ({ page }) => {
+        if (!sharedUtils.ReadBusiness('taagid_naot_rp')) {
+            test.skip(true, 'עסק taagid_naot אין לו נציג אחראי מקושר — הרץ תחילה 03_rp-registration');
+        }
         test.setTimeout(3600000);
         const uniqueId = Date.now().toString().slice(-4);
         const itemNameH = `בדיקת תווים פריט נאות ${uniqueId}`;
@@ -132,7 +150,7 @@ test.describe('בדיקות פריטים - הוספת פריט (RegulationItem)'
     });
 
     test('עסק ללא יבואן נאות - אפשרות מסלול אירופי לא מוצגת', async ({ page }) => {
-        const businessName = sharedUtils.ReadBusiness('taagid');
+        const businessName = sharedUtils.ReadBusiness('lo_taagid');
         await sharedUtils.OpenPageMancal(businessName);
         await regulationItemPage.addNew.click();
         await expect(regulationItemPage.europeanRoute.first()).not.toBeVisible({ timeout: 5000 });

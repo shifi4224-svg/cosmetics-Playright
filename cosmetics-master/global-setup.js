@@ -7,6 +7,7 @@ const TEMPLATE_PATH = path.join(__dirname, 'Data', 'businesses.template.json');
 // מפתחות עסק + הפלאג שמעיד שיש להם RP מקושר
 const RP_REQUIREMENTS = [
     { businessKey: 'taagid',      rpKey: 'taagid_rp',      usedIn: '08, 09, 10, 20' },
+    { businessKey: 'lo_taagid',   rpKey: 'lo_taagid_rp',   usedIn: '09 (שכפול - עסק ללא נוטיפיקציות)' },
     { businessKey: 'rp_taagid',   rpKey: 'rp_taagid_rp',   usedIn: '03 (תאגיד RP)' },
     { businessKey: 'taagid_naot', rpKey: 'taagid_naot_rp', usedIn: '08 (פריט נאות)' },
 ];
@@ -46,7 +47,7 @@ module.exports = async function globalSetup() {
     }
 
     if (!allOk) {
-        console.warn('\n⚠️  חלק מהטסטים עלולים להיכשל עקב העדר נציג אחראי מקושר.\n');
+        throw new Error('❌  חסרים נציגים אחראיים מקושרים — הרץ תחילה את טסט 03_rp-registration ואז הרץ שוב.');
     } else {
         console.log('\n✅  כל תנאי המוקדמים תקינים.\n');
     }

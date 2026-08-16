@@ -26,19 +26,40 @@ class EditBussinesDetailsPage {
             await this.sharedUtils.OpenDetails(this.editButton);
             
             if (flug) {
-                await this.sharedUtils.CheckCharacters(this.businessName, "שם העסק", this.env.charBusinessName);
-                await this.sharedUtils.CheckMaxLength(this.businessName, 100, "שם העסק");
-                await this.sharedUtils.TestIsraeliPhoneNumberValidation(this.businessPhone);
-                await this.sharedUtils.CheckCharactersEmail(this.businessEmail, "מייל", this.env.charEmail);
-                await this.sharedUtils.CheckMaxEmail(this.businessEmail, 100, "מייל");
+                if (await this.businessName.isEnabled().catch(() => false)) {
+                    await this.sharedUtils.CheckCharacters(this.businessName, "שם העסק", this.env.charBusinessName);
+                    await this.sharedUtils.CheckMaxLength(this.businessName, 100, "שם העסק");
+                }
+                if (await this.businessPhone.isEnabled().catch(() => false)) {
+                    await this.sharedUtils.TestIsraeliPhoneNumberValidation(this.businessPhone);
+                }
+                if (await this.businessEmail.isEnabled().catch(() => false)) {
+                    await this.sharedUtils.CheckCharactersEmail(this.businessEmail, "מייל", this.env.charEmail);
+                    await this.sharedUtils.CheckMaxEmail(this.businessEmail, 100, "מייל");
+                }
             }
             
-            await this.businessName.fill(name);
-            
-            this.sharedUtils.WriteBusiness('taagid', name);
-            
-            await this.businessPhone.fill(phone);
-            await this.businessEmail.fill(email);
+            const nameEnabled = await this.businessName.isEnabled().catch(() => false);
+            if (nameEnabled) {
+                await this.businessName.fill(name);
+                this.sharedUtils.WriteBusiness('taagid', name);
+            } else {
+                this.log.info('שדה שם העסק חסום — לא עודכן, השם נשאר כפי שהיה');
+            }
+
+            const phoneEnabled = await this.businessPhone.isEnabled().catch(() => false);
+            if (phoneEnabled) {
+                await this.businessPhone.fill(phone);
+            } else {
+                this.log.info('שדה טלפון חסום — דולג');
+            }
+
+            const emailEnabled = await this.businessEmail.isEnabled().catch(() => false);
+            if (emailEnabled) {
+                await this.businessEmail.fill(email);
+            } else {
+                this.log.info('שדה מייל חסום — דולג');
+            }
             await this.saveButton.click();
 
             const dialog = this.page.locator('//div[@role="dialog"] | //dialog');

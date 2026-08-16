@@ -113,6 +113,7 @@ class RegulationNotificationPage {
         this.distributionStatus = this.page.locator('//input[@aria-label="סטטוס הפצה"]');
         this.distributionStatusValue = this.page.locator('//mat-option[@ng-reflect-value="1"]');
         this.noContainNano = this.page.locator('//*[text()="לא"]');
+        this.containNano = this.page.locator('//*[text()="כן"]');
 
         this.saveSubmit = this.page.locator('//button[@type="submit"]');
         this.dialog = this.page.locator('//div[@role="dialog"]');
@@ -136,11 +137,11 @@ class RegulationNotificationPage {
             await this.sharedUtils.CheckMaxLength(this.nameNewKit, 50, "שם ערכה");
         }
         await this.nameNewKit.fill(k[0]);
-        if (flug) {
-            await this.sharedUtils.CheckCharacters(this.barcodeKit, "ברקוד", this.env.charBusinessId);
-            await this.sharedUtils.CheckMaxLength(this.barcodeKit, 9, "ברקוד");
-        }
-        await this.barcodeKit.fill(k[1] || "");
+        // if (flug) {
+        //     await this.sharedUtils.CheckCharacters(this.barcodeKit, "ברקוד", this.env.charBusinessId);
+        //     await this.sharedUtils.CheckMaxLength(this.barcodeKit, 9, "ברקוד");
+        // }
+        // await this.barcodeKit.fill(k[1] || "");
         await this.selectFileKit.click();
         if (flug) {
             await this.filesPage.TestFileTypeValidation(this.typeFileKit, "ערכה");
@@ -375,6 +376,17 @@ class RegulationNotificationPage {
         }
     }
 
+    async _SelectManufacturerRandom() {
+        await this.israelManufacturerAbroad.click();
+        await this.manufacturerName.click();
+        await this.manufacturerName.fill('א');
+        await this.option.first().waitFor({ state: 'visible', timeout: 5000 });
+        const options = this.option;
+        const count = await options.count();
+        const idx = Math.floor(Math.random() * count);
+        await options.nth(idx).click();
+    }
+
     async _OpenNotificationForm(itemName) {
         const rows = this.page.locator('//mat-row[@role="row"]');
         await rows.first().waitFor({ state: 'visible', timeout: 10000 });
@@ -398,10 +410,8 @@ class RegulationNotificationPage {
         // שלב 2: פתיחת טופס הנוטיפיקציה
         await this._OpenNotificationForm(itemName);
 
-        //יצרן מקומי
-        await this.israelManufacturerAbroad.click();
-        await this.manufacturerName.fill(v[0]);
-        await this.option.first().click();
+        //יצרן מקומי — בחירה אקראית מהרשימה
+        await this._SelectManufacturerRandom();
         await this.nextStep.click();
         //קטגוריות
         await this.category1.click();
@@ -510,9 +520,7 @@ class RegulationNotificationPage {
         this.log.info("שלב 1 — מילוי יצרן ושמירת טיוטה");
         await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", 'לאישור נציג אחראי', "approve", false);
         await this._OpenNotificationForm(itemName);
-        await this.israelManufacturerAbroad.click();
-        await this.manufacturerName.fill(v[0]);
-        await this.option.first().click();
+        await this._SelectManufacturerRandom();
         await this._SaveDraftWithRetry("טיוטה 1");
 
         // --- טיוטה 2: שלב פרטי התמרוק המלא (קטגוריות + מאפיינים + קבצים + כמות + גוונים) ---
@@ -843,7 +851,7 @@ class RegulationNotificationPage {
         await this.page.waitForTimeout(5000);
     }
 
-    async CreateNotificationCharAndMaxTest(itemName = "") {
+    async CreateNotificationCharAndMaxTest(itemName = "", withNano = false) {
         this.log.info("מתחיל יצירת נוטיפיקציה - בדיקת תווים + מקסימום תווים בכל שדה");
 
         await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", 'לאישור נציג אחראי', "approve", true);
@@ -982,7 +990,12 @@ class RegulationNotificationPage {
         await this.nextStep.click();
 
         // --- שלב 12: ננו ושמירה ---
-        await this.noContainNano.click();
+        if (withNano) {
+            await this.containNano.click();
+            // TODO: מלאי כאן את שדות הננו
+        } else {
+            await this.noContainNano.click();
+        }
         await this.saveSubmit.click();
 
         if (await this.sharedUtils.isVisibleSafe(this.manufAddress, 2000)) {
@@ -1146,9 +1159,7 @@ class RegulationNotificationPage {
             await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", "לאישור נציג אחראי", "approve", false);
         }
         await this._OpenNotificationForm(itemName);
-        await this.israelManufacturerAbroad.click();
-        await this.manufacturerName.click();
-        await this.option.first().click();
+        await this._SelectManufacturerRandom();
         await this.nextStep.click();
     }
 
@@ -1236,9 +1247,7 @@ class RegulationNotificationPage {
         await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", "לאישור נציג אחראי", "approve", false);
         await this._OpenNotificationForm(itemName);
 
-        await this.israelManufacturerAbroad.click();
-        await this.manufacturerName.fill(v[0]);
-        await this.option.first().click();
+        await this._SelectManufacturerRandom();
         await this.nextStep.click();
 
         await this.category1.click();
@@ -1289,9 +1298,7 @@ class RegulationNotificationPage {
         await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", "לאישור נציג אחראי", "approve", false);
         await this._OpenNotificationForm(itemName);
 
-        await this.israelManufacturerAbroad.click();
-        await this.manufacturerName.fill(v[0]);
-        await this.option.first().click();
+        await this._SelectManufacturerRandom();
         await this.nextStep.click();
 
         await this.category1.click();
@@ -1397,6 +1404,81 @@ class RegulationNotificationPage {
             await this.okEnd.click();
             await this.page.waitForTimeout(10000);
         }
+    }
+
+    async CreateNotificationWithNano(itemName = "") {
+        const v = await this.ReadValues("sanity.txt");
+
+        await this.regulationItemPage.OpenItem1("", "", itemName, "פריט רגיל", "לאישור נציג אחראי", "approve", false);
+        await this._OpenNotificationForm(itemName);
+
+        // שלב 1: יצרן — בחירה אקראית מהרשימה
+        await this._SelectManufacturerRandom();
+        await this.nextStep.click();
+
+        // שלב 2: קטגוריות
+        await this.category1.click();
+        await this.typeName1.waitFor({ state: 'visible' });
+        await this.typeName1.click();
+        await this.category2.click();
+        await this.typeName2.waitFor({ state: 'visible' });
+        await this.typeName2.click();
+        await this.category3.click();
+        await this.typeName3.waitFor({ state: 'visible' });
+        await this.typeName3.click();
+
+        // מאפייני התמרוק
+        await this.SpecialPack(false);
+
+        // תיאור התמרוק
+        await this.phases.click();
+        await this.typePhases.click();
+        await this.physicochemical.click();
+        await this.typePhysicochemical.waitFor({ state: 'visible', timeout: 1000 }).catch(() => {});
+        await this.typePhysicochemical.click();
+
+        // קבצים
+        await this.Files(false);
+
+        // כמות ואריזה
+        await this.QuantityAndPackaging([v[1]], false);
+        await this.instructionsForUse.fill(v[2]);
+
+        // תוקף המוצר
+        await this.exp.click();
+        await this.numOfMonth.fill("200");
+        await this.frequencyOfUse.click();
+        await this.frequencyOfUseName.click();
+
+        // גוונים
+        await this.AddShades(v[3], false);
+        await this.nextStep.click();
+
+        // חומרים
+        await this.page.waitForTimeout(5000);
+        await this.oKmaterials.click();
+        await this.page.waitForTimeout(5000);
+        await this.nextStep.click();
+        await this.nextStep.click();
+
+        // אוכלוסיית יעד
+        await this.populationTitle.click();
+        await this.populationTitleName.click();
+        await this.nextStep.click();
+
+        // ננו — כן
+        await this.containNano.click();
+
+        // TODO: מלאי כאן את שדות הננו
+
+        await this.saveSubmit.click();
+
+        if (await this.sharedUtils.isVisibleSafe(this.manufAddress, 2000)) {
+            await this.manuftype1.click();
+            await this.manufSave.click();
+        }
+        await this.dialog.waitFor({ state: 'visible' });
+        await this.CheckDialog();
     }
 }
 

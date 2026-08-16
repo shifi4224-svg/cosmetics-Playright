@@ -268,6 +268,17 @@ test.describe('נציג אחראי מקושר ליצרן או יבואן', () =>
         expect(text).toContain('איש הקשר כבר משוייך לתאגיד');
         await dealerPage.okEnd.click();
     });
+
+    test('קישור נציג אחראי לעסק לא תאגיד', async ({ page }) => {
+        const sharedUtils = new SharedUtils(page, po, env, console);
+        const businessName = sharedUtils.ReadBusiness('lo_taagid');
+        await regulationRPPage.RegulationToBusiness(businessName, false);
+        await expect(dealerPage.dialog).toBeVisible({ timeout: 10000 });
+        const text = await dealerPage.dialog.textContent();
+        expect(text).toContain('בהצלחה');
+        await dealerPage.okEnd.click();
+        sharedUtils.WriteBusiness('lo_taagid_rp', true);
+    });
 });
 
 // ─────────────────────────────────────────────

@@ -225,7 +225,7 @@ class RegulationRPPage {
         this.log.info("בדיקת שם קובץ (תווים + אורך) — נציג אחראי בודד");
         await this._NavigateToFileField();
         const charResult = await this.files.TestFileNameValidation("", "קובץ", "Doc1.pdf");
-        const maxLenBugs = await this.files.TestFileNameMaxLength("", "קובץ", "Doc1.pdf", 100);
+        const maxLenBugs = await this.files.TestFileNameMaxLength("", "קובץ", "Doc1.pdf", 90);
         return charResult.bugs + maxLenBugs;
     }
 

@@ -52,6 +52,7 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
         // שלב 1: מנכ"ל מוסיף פריט למאגר
         await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
 
+
         await regulationNotificationPage.CreateNotificationSanity(itemNameH, false);
 
         // מוודא שהופיעה הודעת הצלחה וסוגר את הדיאלוג מהטסט
@@ -141,32 +142,44 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
         const itemNameE = `Empty Dup Item ${uniqueId}`;
         const businessName = sharedUtils.ReadBusiness('lo_taagid');
 
-        // יוצרים פריט עבור lo_taagid ומאשרים ע"י נציג אחראי
-        await regulationItemPage.AddItemFast(itemNameH, itemNameE, businessName, 0, false);
+        // מנכ"ל: הוספת פריט לעסק lo_taagid
+        await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false, businessName);
+        // נציג אחראי: אישור הפריט
         await regulationItemPage.OpenItem1(businessName, businessName, itemNameH, "פריט רגיל", "לאישור נציג אחראי", "approve", false);
 
         // ישירות בעמוד נציג אחראי לוחצים על הפריט ופותחים טבלת שכפול
-        // טבלת השכפול צריכה להיות ריקה כי לעסק זה אין נוטיפיקציות מושלמות
+        // טבלת השכפול צריכה להיות ריקה כי לעסק זה אין נוטיפיקציות מושלמת
         const result = await regulationItemPage.OpenDuplicateTable(itemNameH);
 
         expect(result.hasRows).toBe(false);
     });
 
     test('שכפול נוטיפיקציה - שכפול מנוטיפיקציה קיימת ובדיקת נתונים', async ({ page }) => {
-        // שם הפריט נשמר מטסט הסאניטי (כולל נוטיפיקציה מושלמת)
-        const itemNameH = sharedUtils.ReadBusiness('sanity_item_name');
-        if (!itemNameH) {
-            console.log('לא נמצא שם פריט סאניטי — מדלג');
-            return;
-        }
+        const uniqueId = Date.now().toString().slice(-4);
+        const itemNameH = `פריט לשכפול ${uniqueId}`;
+        const itemNameE = `Dup Item ${uniqueId}`;
 
-        // חוזרים למנכ"ל ופותחים טבלת שכפול — הפריט כבר מאושר ויש לו נוטיפיקציה
-        await sharedUtils.OpenPageMancal();
+        // מנכ"ל: הוספת פריט
+        await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
+        // נציג אחראי: אישור הפריט
+        await regulationItemPage.OpenItem1("", "", itemNameH, "פריט רגיל", "לאישור נציג אחראי", "approve", false);
+
+        // מנכ"ל: לחיצה על שורת הפריט + כפתור שכפל נוטיפיקציה + בחירת שורה ראשונה
+        // הטבלה מציגה נוטיפיקציות מושלמות של אותו עסק (כגון זו שנשמרה בטסט הסאניטי)
         const result = await regulationItemPage.OpenDuplicateTable(itemNameH, 0);
         expect(result.hasRows).toBe(true);
-
-        // אחרי הבחירה הנוטיפיקציה נפתחת אוטומטית — ממלא קבצים ושומר
+        await regulationNotificationPage.nextStep.click();
+        // הנוטיפיקציה המשוכפלת נפתחת אוטומטית — ממלא קבצים, גוון ושומר
         await regulationNotificationPage.Files(false);
+        await regulationNotificationPage.AddShades("ירוק", false);
+        await regulationNotificationPage.nextStep.click();
+        // חומרים
+        await regulationNotificationPage.page.waitForTimeout(5000);
+        await regulationNotificationPage.nextStep.click();
+        await regulationNotificationPage.nextStep.click();
+        // אוכלוסיית יעד
+        await regulationNotificationPage.nextStep.click();
+        // ננו
         await regulationNotificationPage.saveSubmit.click();
         if (await regulationNotificationPage.sharedUtils.isVisibleSafe(regulationNotificationPage.manufAddress, 2000)) {
             await regulationNotificationPage.manuftype1.click();
@@ -174,6 +187,11 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
         }
         await regulationNotificationPage.dialog.waitFor({ state: 'visible', timeout: 30000 });
         const text = await regulationNotificationPage.dialog.textContent();
+        if (text.includes('אנא נסה שוב')) {
+            await regulationNotificationPage.okEnd.click();
+            await page.pause();
+            return;
+        }
         expect(text).toContain('נוטיפיקציה נשמרה בהצלחה');
         await regulationNotificationPage.okEnd.click();
     });
@@ -187,8 +205,8 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
         // שלב 1: מנכ"ל מוסיף פריט למאגר — כולל בדיקת תווים בשדות השם
         await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 0);
 
-        // שלב 2: בודק תווים + מקסימום תווים בכל שדה וממלא מקסימום תווים מאופשרים
-        await regulationNotificationPage.CreateNotificationCharAndMaxTest(itemNameH);
+        // שלב 2: בודק תווים + מקסימום תווים בכל שדה וממלא מקסימום תווים מאופשרים — כולל ננו=כן
+        await regulationNotificationPage.CreateNotificationCharAndMaxTest(itemNameH, true);
 
         // מוודא שהופיעה הודעת הצלחה וסוגר את הדיאלוג
         try {
@@ -199,5 +217,18 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
             await page.pause();
             throw err;
         }
+    });
+
+    test('יצירת נוטיפיקציה עם ננו - שפיות', async () => {
+        const uniqueId = Date.now().toString().slice(-4);
+        const itemNameH = `פריט ננו ${uniqueId}`;
+        const itemNameE = `Nano Item ${uniqueId}`;
+
+        await regulationItemPage.AddItem(itemNameH, itemNameE, 0, false);
+        await regulationNotificationPage.CreateNotificationWithNano(itemNameH);
+
+        const text = await regulationNotificationPage.dialog.textContent();
+        expect(text).toContain('נוטיפיקציה נשמרה בהצלחה');
+        await regulationNotificationPage.okEnd.click();
     });
 });

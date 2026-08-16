@@ -19,7 +19,7 @@ class SupervisedEmploeePage {
         this.telefonNumber = this.page.locator('//input[@aria-label="מספר טלפון"]');
         this.emailAddress = this.page.locator('//input[@aria-label="דואר אלקטרוני"]');
         this.checkBox = this.page.locator('//input[@aria-label="כל המידע והפעולות שהעובד מטעמי יבצע הן על דעתי והסכמתי"]');
-        this.saveButton = this.page.locator('//span[text()="שמירת איש קשר"]');
+        this.saveButton = this.page.locator('//span[text()="שמור ושלח"]');
         this.okEnd = this.page.locator('//button[@id="confirm-btn"]');
         this.points3 = this.page.locator('//*[@class="dots"]');
         this.editContact = this.page.locator('//span[text()="עריכת איש קשר"]');

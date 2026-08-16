@@ -262,7 +262,7 @@ class FilesPage {
         let bugs = 0;
 
         // --- בדיקה 1: שם של maxLength+1 תווים — צריך לגרום לשגיאה ---
-        const longName = 'א'.repeat(maxLength + 1 - ext.length - 1) + `.${ext}`;
+        const longName = 'a'.repeat(maxLength + 1 - ext.length - 1) + `.${ext}`;
         const longPath = path.join(os.tmpdir(), longName);
         try {
             fs.copyFileSync(sourcePath, longPath);
@@ -290,7 +290,7 @@ class FilesPage {
         }
 
         // --- בדיקה 2: שם של בדיוק maxLength תווים — צריך להתקבל ---
-        const exactName = 'א'.repeat(maxLength - ext.length - 1) + `.${ext}`;
+        const exactName = 'a'.repeat(maxLength - ext.length - 1) + `.${ext}`;
         const exactPath = path.join(os.tmpdir(), exactName);
         try {
             fs.copyFileSync(sourcePath, exactPath);
