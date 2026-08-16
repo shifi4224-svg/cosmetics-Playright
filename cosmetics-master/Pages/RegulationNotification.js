@@ -50,6 +50,8 @@ class RegulationNotificationPage {
         this.newKit = this.page.locator('//span[text()=" חדש "]');
         this.nameNewKit = this.page.locator('//input[@placeholder="שם ערכה חדש"]');
         this.barcodeKit = this.page.locator('//input[@placeholder="מספר ברקוד"]');
+        this.barcodeKitYes = this.page.locator('(//mat-cell)[2]//button[@aria-label="כן"]');
+        this.barcodeKitNo = this.page.locator('(//mat-cell)[2]//button[@aria-label="לא"]');
         this.selectFileKit = this.page.locator('//app-notification-kits//div[@class="upload-button"]');
         this.typeFileKit = this.page.locator('//*[contains(text(), "העלאת קובץ ערכה")]//..');
         this.addKit = this.page.locator('//moh-button[@textkey="addKit"]');
@@ -73,6 +75,7 @@ class RegulationNotificationPage {
         this.unitTypeName2 = this.page.locator('//*[text()=" ליטר "]');
         this.amount = this.page.locator('//input[@aria-label="כמות"]');
         this.barcode = this.page.locator('//input[@aria-label="ברקוד"]');
+        this.barcodeExists = this.page.locator('//input[@aria-label="האם קיים ברקוד?"]');
         this.secondPack = this.page.locator('//label[contains(text(), "קיימת אריזה שיניונית לתמרוק")]');
         this.specialPackCheckBox = this.page.locator('//input[@aria-label="האם התמרוק מוצג באריזה מיוחדת?"]');
         this.specialPackValue = this.page.locator('//span[text()=" אחר "]');
@@ -137,11 +140,12 @@ class RegulationNotificationPage {
             await this.sharedUtils.CheckMaxLength(this.nameNewKit, 50, "שם ערכה");
         }
         await this.nameNewKit.fill(k[0]);
+        await this.barcodeKitYes.click();
         // if (flug) {
         //     await this.sharedUtils.CheckCharacters(this.barcodeKit, "ברקוד", this.env.charBusinessId);
         //     await this.sharedUtils.CheckMaxLength(this.barcodeKit, 9, "ברקוד");
         // }
-        // await this.barcodeKit.fill(k[1] || "");
+        await this.barcodeKit.fill(k[1] || "123456789");
         await this.selectFileKit.click();
         if (flug) {
             await this.filesPage.TestFileTypeValidation(this.typeFileKit, "ערכה");
@@ -281,10 +285,12 @@ class RegulationNotificationPage {
         await this.unitType.click();
         await this.unitTypeName.click();
         await this.amount.fill(p[0] || "");
+        await this.barcodeExists.click();
         if (flug) {
             await this.sharedUtils.CheckCharacters(this.barcode, "ברקוד", this.env.charBusinessId);
             await this.sharedUtils.CheckMaxLength(this.barcode, 9, "ברקוד");
         }
+        await this.barcode.fill(p[1] || "123456789");
     }
 
     async SpecialPack(flug = true) {
@@ -690,6 +696,7 @@ class RegulationNotificationPage {
         await this.unitType.click();
         await this.unitTypeName.click();
         await this.amount.fill("100");
+        await this.barcodeExists.click();
         const barcodeVal = this.GenerateMaxCharString(this.env.charBusinessId, 9);
         await this.barcode.fill(barcodeVal);
 
@@ -937,6 +944,7 @@ class RegulationNotificationPage {
         await this.unitTypeName.click();
         await this.amount.fill("10");
 
+        await this.barcodeExists.click();
         const barcodeAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.barcode, "ברקוד");
         await this.sharedUtils.CheckMaxLength(this.barcode, 9, "ברקוד");
         await this.barcode.fill(this.GenerateMaxCharString(barcodeAllowed || "1", 9));
@@ -1084,7 +1092,8 @@ class RegulationNotificationPage {
         await this.unitTypeName.click();
         await this.amount.fill("10");
 
-        const barcodeAllowed      = await this.sharedUtils.CheckCharactersAndGetAllowed(this.barcode,            "ברקוד");
+        await this.barcodeExists.click();
+        const barcodeAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.barcode, "ברקוד");
         await this.barcode.fill(barcodeAllowed || "1");
 
         // הוראות שימוש - שדה textarea ארוך: בודקים גם תווים וגם ירידת שורה
@@ -1169,7 +1178,7 @@ class RegulationNotificationPage {
         await this.selectKit.click();
         await this.newKit.click();
         await this.nameNewKit.fill("ערכה בדיקה");
-        await this.barcodeKit.fill("123456789");
+        // await this.barcodeKit.fill("123456789");
     }
 
     async _NavigateToShadesSection(itemName, alreadyApproved = false) {
@@ -1324,6 +1333,7 @@ class RegulationNotificationPage {
         await this.unitType.click();
         await this.unitTypeName.click();
         await this.amount.fill("100");
+        await this.barcodeExists.click();
         await this.barcode.fill("111222333");
 
         // אריזה שנייה

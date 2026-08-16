@@ -48,7 +48,7 @@ async function runShadesLoop({ page, regulationNotificationPage, rama2, rama3, i
             await regulationNotificationPage.regulationItemPage.extCreateN.click();
         } else if (await regulationNotificationPage.sharedUtils.isVisibleSafe(regulationNotificationPage.regulationItemPage.points3, 2000)) {
             await regulationNotificationPage.regulationItemPage.points3.click();
-            await page.locator(`//span[text()="${actionText}"]`).click();
+            await page.locator('//span[text()="תיקון נוטיפיקציה" or text()="עריכה"]').click();
         }
 
         // שלב הבא לשלב פרטי התמרוק
