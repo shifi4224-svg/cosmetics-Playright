@@ -260,12 +260,12 @@ class RegulationNotificationPage {
         await this.street.fill(a3);
         if (flug) {
             await this.sharedUtils.CheckCharacters(this.houseNum, "מספר בית", this.env.charBusinessId);
-            await this.sharedUtils.CheckMaxLength(this.houseNum, 10, "מספר בית");
+            await this.sharedUtils.CheckMaxLength(this.houseNum, 9, "מספר בית");
         }
         await this.houseNum.fill(a4);
         if (flug) {
             await this.sharedUtils.CheckCharacters(this.zipCode, "מיקוד", this.env.charBusinessId);
-            await this.sharedUtils.CheckMaxLength(this.zipCode, 10, "מיקוד");
+            await this.sharedUtils.CheckMaxLength(this.zipCode, 7, "מיקוד");
         }
         await this.zipCode.fill(a5);
         if (flug) {
@@ -643,10 +643,10 @@ class RegulationNotificationPage {
         const streetVal = this.GenerateMaxCharString(this.env.charNotification, 50);
         await this.street.fill(streetVal);
 
-        const houseNumVal = this.GenerateMaxCharString(this.env.charBusinessId, 10);
+        const houseNumVal = this.GenerateMaxCharString(this.env.charBusinessId, 9);
         await this.houseNum.fill(houseNumVal);
 
-        const zipCodeVal = this.GenerateMaxCharString(this.env.charBusinessId, 10);
+        const zipCodeVal = this.GenerateMaxCharString(this.env.charBusinessId, 7);
         await this.zipCode.fill(zipCodeVal);
 
         const addrNotesVal = this.GenerateMaxCharString(this.env.charNotification, 200);
@@ -889,12 +889,12 @@ class RegulationNotificationPage {
         await this.street.fill(this.GenerateMaxCharString(streetAllowed || "A", 50));
 
         const houseNumAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.houseNum, "מספר בית");
-        await this.sharedUtils.CheckMaxLength(this.houseNum, 10, "מספר בית");
-        await this.houseNum.fill(this.GenerateMaxCharString(houseNumAllowed || "1", 10));
+        await this.sharedUtils.CheckMaxLength(this.houseNum, 9, "מספר בית");
+        await this.houseNum.fill(this.GenerateMaxCharString(houseNumAllowed || "1", 9));
 
         const zipCodeAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.zipCode, "מיקוד");
-        await this.sharedUtils.CheckMaxLength(this.zipCode, 10, "מיקוד");
-        await this.zipCode.fill(this.GenerateMaxCharString(zipCodeAllowed || "1", 10));
+        await this.sharedUtils.CheckMaxLength(this.zipCode, 7, "מיקוד");
+        await this.zipCode.fill(this.GenerateMaxCharString(zipCodeAllowed || "1", 7));
 
         const addrNotesAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.addressNotes, "הערות לכתובת");
         await this.sharedUtils.CheckMaxLength(this.addressNotes, 200, "הערות לכתובת");
