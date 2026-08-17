@@ -243,7 +243,7 @@ class RegulationNotificationPage {
         await this.otherAddress.click();
         if (flug) {
             await this.sharedUtils.CheckCharacters(this.otherAddressType, "סוג כתובת אחר", this.env.charOtherAddress);
-            await this.sharedUtils.CheckMaxLength(this.otherAddressType, 400, "סוג כתובת אחר");
+            await this.sharedUtils.CheckMaxLength(this.otherAddressType, 200, "סוג כתובת אחר");
         }
         await this.otherAddressType.fill("()-'\".,AWdתץדף43");
         await this.country.click();
@@ -639,14 +639,14 @@ class RegulationNotificationPage {
 
         const cityVal = this.GenerateMaxCharString(this.env.charNotification, 50);
         await this.city.fill(cityVal);
-        
+
         const streetVal = this.GenerateMaxCharString(this.env.charNotification, 50);
         await this.street.fill(streetVal);
 
-        const houseNumVal = this.GenerateMaxCharString(this.env.charBusinessId, 9);
+        const houseNumVal = this.GenerateMaxCharString(this.env.charBusinessId, 10);
         await this.houseNum.fill(houseNumVal);
 
-        const zipCodeVal = this.GenerateMaxCharString(this.env.charBusinessId, 7);
+        const zipCodeVal = this.GenerateMaxCharString(this.env.charBusinessId, 10);
         await this.zipCode.fill(zipCodeVal);
 
         const addrNotesVal = this.GenerateMaxCharString(this.env.charNotification, 200);
@@ -752,7 +752,7 @@ class RegulationNotificationPage {
         await this.nextStep.click();
 
         // ננו
-        await this.noContainNano.click();
+        //await this.noContainNano.click();
         await this.saveSubmit.click();
 
         if (await this.sharedUtils.isVisibleSafe(this.manufAddress, 2000)) {
@@ -874,8 +874,8 @@ class RegulationNotificationPage {
         await this.otherAddress.click();
 
         const otherAddrAllowed = await this.sharedUtils.CheckCharactersAndGetAllowed(this.otherAddressType, "סוג כתובת אחר");
-        await this.sharedUtils.CheckMaxLength(this.otherAddressType, 400, "סוג כתובת אחר");
-        await this.otherAddressType.fill(this.GenerateMaxCharString(otherAddrAllowed || "A", 400));
+        await this.sharedUtils.CheckMaxLength(this.otherAddressType, 200, "סוג כתובת אחר");
+        await this.otherAddressType.fill(this.GenerateMaxCharString(otherAddrAllowed || "A", 200));
 
         await this.country.click();
         await this.countryName.click();
