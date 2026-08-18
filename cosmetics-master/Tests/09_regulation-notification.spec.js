@@ -205,8 +205,8 @@ test.describe('בדיקות נוטיפיקציות - יצירת נוטיפיקצ
         // שלב 1: מנכ"ל מוסיף פריט למאגר — כולל בדיקת תווים בשדות השם
         await regulationItemPage.AddItemCharTest(itemNameH, itemNameE, 0);
 
-        // שלב 2: בודק תווים + מקסימום תווים בכל שדה וממלא מקסימום תווים מאופשרים — כולל ננו=כן
-        await regulationNotificationPage.CreateNotificationCharAndMaxTest(itemNameH, true);
+        // שלב 2: בודק תווים + מקסימום תווים בכל שדה וממלא מקסימום תווים מאופשרים
+        await regulationNotificationPage.CreateNotificationCharAndMaxTest(itemNameH);
 
         // מוודא שהופיעה הודעת הצלחה וסוגר את הדיאלוג
         try {
